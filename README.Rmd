@@ -54,6 +54,14 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and `nanoarrow::write_nanoarro
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
 ```
 
+## Install locally
+
+Run this once before examples:
+
+```{bash eval=TRUE}
+make install
+```
+
 ## Example Nextflow pipeline
 
 The repository includes `validation/main.nf` using:
@@ -94,13 +102,6 @@ workflow {
     ''')
     println "ERR status=${err.control.status ?: 'ok'}"
 }
-```
-
-Run it after installing the plugin locally:
-
-
-```{bash eval=TRUE, include=FALSE}
-make install
 ```
 
 This example executes real inline R functions (`echo`, `explode`) through the bundled launcher and reports `status=ok`/`status=error` envelopes.

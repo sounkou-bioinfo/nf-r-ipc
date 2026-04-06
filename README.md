@@ -27,8 +27,29 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :testClasses UP-TO-DATE
 #> > Task :test UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 399ms
+#> BUILD SUCCESSFUL in 412ms
 #> 9 actionable tasks: 9 up-to-date
+```
+
+## Install locally
+
+Run this once before examples:
+
+``` bash
+make install
+#> ./gradlew install
+#> > Task :compileJava UP-TO-DATE
+#> > Task :compileGroovy UP-TO-DATE
+#> > Task :processResources UP-TO-DATE
+#> > Task :classes UP-TO-DATE
+#> > Task :extensionPoints UP-TO-DATE
+#> > Task :jar UP-TO-DATE
+#> > Task :packagePlugin UP-TO-DATE
+#> > Task :assemble UP-TO-DATE
+#> > Task :installPlugin UP-TO-DATE
+#> 
+#> BUILD SUCCESSFUL in 405ms
+#> 7 actionable tasks: 7 up-to-date
 ```
 
 ## Example Nextflow pipeline
@@ -75,7 +96,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-2827328d30c6d.nf` [nauseous_tuckerman] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca77c88d65.nf` [sharp_gautier] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -87,8 +108,6 @@ workflow {
 #> OK decoded=[sample:S1, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
 #> ERR status=error
 ```
-
-Run it after installing the plugin locally:
 
 This example executes real inline R functions (`echo`, `explode`)
 through the bundled launcher and reports `status=ok`/`status=error`
@@ -126,7 +145,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-282736faa3be.nf` [cheesy_rutherford] DSL2 - revision: 2774f29512
+#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca4fc3bef8.nf` [lethal_tesla] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -172,7 +191,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-282736d4e0026.nf` [gloomy_williams] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca5b4fe226.nf` [ridiculous_angela] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
