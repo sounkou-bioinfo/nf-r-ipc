@@ -3,6 +3,26 @@
 .idea
 .nextflow*
 
+# IDE / local tooling
+.classpath
+.project
+.settings/
+
+# R markdown render artifacts
+README.html
+
+# Local scripts/binaries
+bin/
+
 # Ignore Gradle build output directory
 build
 work
+.sync
+
+# Nextflow run artifacts
+trace*.txt
+timeline*.html
+report*.html
+dag*.html
+dag*.dot
+*.nftrace

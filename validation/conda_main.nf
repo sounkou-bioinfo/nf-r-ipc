@@ -3,7 +3,7 @@ include { rFunction } from 'plugin/nf-r-ipc'
 workflow {
     def ok = rFunction([
         function: 'echo',
-        _executable: 'Rscript',
+        _conda_env: '/root/miniconda3',
         sample: 'S1',
         values: [1, 2, 3],
         meta: [batch: 'B1', flags: [true, false, null]]
@@ -17,12 +17,10 @@ workflow {
     println "OK runtime=${ok.runtime.command}"
     println "OK decoded=${ok.decoded_data}"
 
-    // Demonstrate call-level error handling contract without throwing.
-    // In current bootstrap, this is a shape example until external R launcher is wired.
     def err = rFunction([
         function: 'explode',
         _on_error: 'return',
-        _executable: 'Rscript',
+        _conda_env: '/root/miniconda3',
         trigger: 'error'
     ], '''
         explode <- function(trigger) {

@@ -2,16 +2,30 @@ plugins {
     id 'io.nextflow.nextflow-plugin' version '1.0.0-beta.10'
 }
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.arrow:arrow-vector:19.0.0'
+    implementation 'org.apache.arrow:arrow-memory-core:19.0.0'
+    implementation 'org.apache.arrow:arrow-memory-netty:19.0.0'
+    implementation 'org.apache.arrow:arrow-format:19.0.0'
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
+}
+
 version = '0.1.0'
 
 nextflowPlugin {
     nextflowVersion = '24.10.0'
 
-    provider = 'provider-name'
-    className = 'acme.plugin.MyPlugin'
+    provider = 'nf-r'
+    className = 'nextflow.nfr.NfRPlugin'
     extensionPoints = [
-        'acme.plugin.MyExtension',
-        'acme.plugin.MyFactory'
+        'nextflow.nfr.RExtension'
     ]
 
 }
