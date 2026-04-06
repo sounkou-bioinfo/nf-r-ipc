@@ -10,15 +10,36 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-knitr::knit_engines$set(nextflow = function(options) {
+nextflow_engine <- function(options) {
   code <- paste(options$code, collapse = "\n")
+
   if (isTRUE(options$eval)) {
-    out <- system2("bash", c("-lc", code), stdout = TRUE, stderr = TRUE)
+    script <- tempfile("readme-nextflow-", fileext = ".nf")
+    writeLines(code, script)
+
+    args <- character(0)
+    if (!is.null(options$args)) {
+      if (length(options$args) == 1) {
+        args <- strsplit(as.character(options$args), "\\s+")[[1]]
+        args <- args[nzchar(args)]
+      } else {
+        args <- as.character(options$args)
+      }
+    }
+
+    cmd <- c("run", script, args)
+    out <- system2("nextflow", cmd, stdout = TRUE, stderr = TRUE)
+    status <- attr(out, "status")
+    if (!is.null(status) && status != 0) {
+      stop(paste(out, collapse = "\n"))
+    }
     knitr::engine_output(options, code, out)
   } else {
     knitr::engine_output(options, code, NULL)
   }
-})
+}
+
+knitr::knit_engines$set(nextflow = nextflow_engine)
 ```
 
 # nf-r IPC plugin
@@ -29,7 +50,7 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and `nanoarrow::write_nanoarro
 
 ## Build and test
 
-```{nextflow eval=TRUE}
+```{bash eval=TRUE}
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
 ```
 
@@ -41,17 +62,45 @@ The repository includes `validation/main.nf` using:
 - nested list/map arguments
 - `_on_error: 'return'` call-level option
 
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
 
-```{bash}
-cat  validation/main.nf
+workflow {
+    def ok = rFunction([
+        function: 'echo',
+        _executable: 'Rscript',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ], '''
+        echo <- function(sample, values, meta) {
+          list(sample = sample, values = values, meta = meta)
+        }
+    ''')
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+
+    def err = rFunction([
+        function: 'explode',
+        _on_error: 'return',
+        _executable: 'Rscript',
+        trigger: 'error'
+    ], '''
+        explode <- function(trigger) {
+          stop('boom from R runtime')
+        }
+    ''')
+    println "ERR status=${err.control.status ?: 'ok'}"
+}
 ```
 
 Run it after installing the plugin locally:
 
 
-```{nextflow eval=TRUE}
+```{bash eval=TRUE, include=FALSE}
 make install
-nextflow run validation/main.nf -plugins nf-r-ipc@0.1.0
 ```
 
 This example executes real inline R functions (`echo`, `explode`) through the bundled launcher and reports `status=ok`/`status=error` envelopes.
@@ -63,10 +112,26 @@ This example executes real inline R functions (`echo`, `explode`) through the bu
 - `plugins.id = 'nf-r-ipc'`
 - `nfR.conda_executable = '/root/miniconda3/bin/conda'`
 
-Run:
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0 -c validation/nextflow.config'}
+include { rFunction } from 'plugin/nf-r-ipc'
 
-```{nextflow eval=FALSE}
-nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.1.0 -c validation/nextflow.config
+workflow {
+    def ok = rFunction([
+        function: 'echo',
+        _conda_env: '/root/miniconda3',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ], '''
+        echo <- function(sample, values, meta) {
+          list(sample = sample, values = values, meta = meta)
+        }
+    ''')
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+}
 ```
 
 Expected output shape:
@@ -74,6 +139,31 @@ Expected output shape:
 - `OK status=ok codec=arrow-java`
 - `OK runtime=[...]`
 - `ERR status=error`
+
+## External R script with Conda
+
+`validation/conda_script_main.nf` uses `script:` to load R functions from:
+
+- `validation/scripts/echo_external.R`
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0 -c validation/nextflow.config'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def ok = rFunction([
+        function: 'echo_external',
+        script: 'validation/scripts/echo_external.R',
+        _conda_env: '/root/miniconda3',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ])
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+}
+```
 
 ## Error-handling modes
 

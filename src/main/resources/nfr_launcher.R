@@ -198,6 +198,16 @@ build_response_frame <- function(control, value) {
 `%||%` <- function(x, y) if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) y else x
 
 safe_eval <- function(req) {
+  script_mode <- as.character(req$control$script_mode %||% "inline")
+  script_ref <- as.character(req$control$script_ref %||% "")
+
+  if (identical(script_mode, "path")) {
+    if (!nzchar(script_ref) || !file.exists(script_ref)) {
+      stop(sprintf("Script path not found: %s", script_ref))
+    }
+    source(script_ref, local = .GlobalEnv)
+  }
+
   if (nzchar(inline_code)) {
     eval(parse(text = inline_code), envir = .GlobalEnv)
   }

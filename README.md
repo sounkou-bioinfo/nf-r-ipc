@@ -11,27 +11,24 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 
 ## Build and test
 
-``` nextflow
+``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
+#> > Task :compileJava UP-TO-DATE
+#> > Task :compileGroovy UP-TO-DATE
+#> > Task :processResources UP-TO-DATE
+#> > Task :classes UP-TO-DATE
+#> > Task :extensionPoints UP-TO-DATE
+#> > Task :jar UP-TO-DATE
+#> > Task :packagePlugin UP-TO-DATE
+#> > Task :assemble UP-TO-DATE
+#> > Task :compileTestJava NO-SOURCE
+#> > Task :compileTestGroovy UP-TO-DATE
+#> > Task :processTestResources UP-TO-DATE
+#> > Task :testClasses UP-TO-DATE
+#> > Task :test UP-TO-DATE
 #> 
-#> > Task :help
-#> 
-#> Welcome to Gradle 8.14.
-#> 
-#> To run a build, run gradlew <task> ...
-#> 
-#> To see a list of available tasks, run gradlew tasks
-#> 
-#> To see more detail about a task, run gradlew help --task <task>
-#> 
-#> To see a list of command-line options, run gradlew --help
-#> 
-#> For more detail on using Gradle, see https://docs.gradle.org/8.14/userguide/command_line_interface.html
-#> 
-#> For troubleshooting, visit https://help.gradle.org
-#> 
-#> BUILD SUCCESSFUL in 384ms
-#> 1 actionable task: 1 executed
+#> BUILD SUCCESSFUL in 399ms
+#> 9 actionable tasks: 9 up-to-date
 ```
 
 ## Example Nextflow pipeline
@@ -42,65 +39,43 @@ The repository includes `validation/main.nf` using:
 - nested list/map arguments
 - `_on_error: 'return'` call-level option
 
-``` bash
-cat  validation/main.nf
-#> include { rFunction } from 'plugin/nf-r-ipc'
-#> 
-#> workflow {
-#>     def ok = rFunction([
-#>         function: 'echo',
-#>         _executable: 'Rscript',
-#>         sample: 'S1',
-#>         values: [1, 2, 3],
-#>         meta: [batch: 'B1', flags: [true, false, null]]
-#>     ], '''
-#>         echo <- function(sample, values, meta) {
-#>           list(sample = sample, values = values, meta = meta)
-#>         }
-#>     ''')
-#> 
-#>     println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
-#>     println "OK runtime=${ok.runtime.command}"
-#>     println "OK decoded=${ok.decoded_data}"
-#> 
-#>     // Demonstrate call-level error handling contract without throwing.
-#>     // In current bootstrap, this is a shape example until external R launcher is wired.
-#>     def err = rFunction([
-#>         function: 'explode',
-#>         _on_error: 'return',
-#>         _executable: 'Rscript',
-#>         trigger: 'error'
-#>     ], '''
-#>         explode <- function(trigger) {
-#>           stop('boom from R runtime')
-#>         }
-#>     ''')
-#>     println "ERR status=${err.control.status ?: 'ok'}"
-#> }
-```
-
-Run it after installing the plugin locally:
-
 ``` nextflow
-make install
-nextflow run validation/main.nf -plugins nf-r-ipc@0.1.0
-#> ./gradlew assemble
-#> > Task :compileJava UP-TO-DATE
-#> > Task :compileGroovy UP-TO-DATE
-#> > Task :processResources UP-TO-DATE
-#> > Task :classes UP-TO-DATE
-#> > Task :extensionPoints UP-TO-DATE
-#> > Task :jar UP-TO-DATE
-#> > Task :packagePlugin UP-TO-DATE
-#> > Task :assemble UP-TO-DATE
-#> 
-#> BUILD SUCCESSFUL in 378ms
-#> 6 actionable tasks: 6 up-to-date
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def ok = rFunction([
+        function: 'echo',
+        _executable: 'Rscript',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ], '''
+        echo <- function(sample, values, meta) {
+          list(sample = sample, values = values, meta = meta)
+        }
+    ''')
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+
+    def err = rFunction([
+        function: 'explode',
+        _on_error: 'return',
+        _executable: 'Rscript',
+        trigger: 'error'
+    ], '''
+        explode <- function(trigger) {
+          stop('boom from R runtime')
+        }
+    ''')
+    println "ERR status=${err.control.status ?: 'ok'}"
+}
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/main.nf` [happy_ardinghelli] DSL2 - revision: c74e91c0e9
+#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-2827328d30c6d.nf` [nauseous_tuckerman] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -112,6 +87,8 @@ nextflow run validation/main.nf -plugins nf-r-ipc@0.1.0
 #> OK decoded=[sample:S1, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
 #> ERR status=error
 ```
+
+Run it after installing the plugin locally:
 
 This example executes real inline R functions (`echo`, `explode`)
 through the bundled launcher and reports `status=ok`/`status=error`
@@ -125,10 +102,40 @@ envelopes.
 - `plugins.id = 'nf-r-ipc'`
 - `nfR.conda_executable = '/root/miniconda3/bin/conda'`
 
-Run:
-
 ``` nextflow
-nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.1.0 -c validation/nextflow.config
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def ok = rFunction([
+        function: 'echo',
+        _conda_env: '/root/miniconda3',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ], '''
+        echo <- function(sample, values, meta) {
+          list(sample = sample, values = values, meta = meta)
+        }
+    ''')
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-282736faa3be.nf` [cheesy_rutherford] DSL2 - revision: 2774f29512
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> OK status=ok codec=arrow-java
+#> OK runtime=[/usr/bin/Rscript]
+#> OK decoded=[sample:S1, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
 ```
 
 Expected output shape:
@@ -136,6 +143,46 @@ Expected output shape:
 - `OK status=ok codec=arrow-java`
 - `OK runtime=[...]`
 - `ERR status=error`
+
+## External R script with Conda
+
+`validation/conda_script_main.nf` uses `script:` to load R functions
+from:
+
+- `validation/scripts/echo_external.R`
+
+``` nextflow
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def ok = rFunction([
+        function: 'echo_external',
+        script: 'validation/scripts/echo_external.R',
+        _conda_env: '/root/miniconda3',
+        sample: 'S1',
+        values: [1, 2, 3],
+        meta: [batch: 'B1', flags: [true, false, null]]
+    ])
+
+    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
+    println "OK runtime=${ok.runtime.command}"
+    println "OK decoded=${ok.decoded_data}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/Rtmp1zIbSg/readme-nextflow-282736d4e0026.nf` [gloomy_williams] DSL2 - revision: 7b069adc40
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> OK status=ok codec=arrow-java
+#> OK runtime=[/usr/bin/Rscript]
+#> OK decoded=[sample:S1-external, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
+```
 
 ## Error-handling modes
 
