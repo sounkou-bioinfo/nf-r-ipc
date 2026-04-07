@@ -22,21 +22,17 @@ This file captures the implementation plan for an `nf-r` style Nextflow plugin t
 - **Protocol model:** one Arrow IPC stream/file for request, one for response.
 - **Control plane:** first batch/table in the Arrow stream (`__nfr_control__`).
 - **Data plane:** subsequent batch(es)/table(s) (`__nfr_data__`).
-- **Codec strategy:** implement two JVM codecs behind one interface:
-  - `ArrowJavaCodec` (primary, production-first)
-  - `NanoarrowJniCodec` (experimental, built in parallel)
+
+Arrow Java is the selected JVM codec for this repository baseline.
 
 This follows the proven pattern: thin orchestration + typed columnar IPC + process isolation.
 
-## Dual-Track Codec Plan
-
-Build both codecs concurrently while keeping one protocol and one test suite.
+## Codec Plan (Arrow Java baseline)
 
 - Define a shared codec interface (`IpcCodec`) for request/response read/write.
 - Keep protocol/schema logic outside codec implementations.
-- Run the same unit/integration tests against both codecs.
-- Use a runtime/config switch (`nfR.codec = 'arrow-java'|'nanoarrow-jni'`) to select backend.
-- Keep `arrow-java` as default until JNI backend proves parity + stability.
+- Use `ArrowJavaCodec` as the production backend.
+- JNI work can be explored later behind the same interface without changing protocol/tests.
 
 ## Protocol Contract (Arrow-Only)
 
@@ -88,14 +84,6 @@ Deferred:
 3. Implement `Rscript` launcher and environment plumbing.
 4. Implement Arrow response reader and typed result conversion.
 5. Implement structured error surfacing from response control batch.
-
-### Phase 1b - Experimental JNI codec in parallel
-
-1. Create JNI module for nanoarrow IPC reader/writer (`NanoarrowJniCodec`).
-2. Implement minimal JNI surface: read control/data tables + write control/data tables.
-3. Add native library loading and platform detection (Linux/macOS first, Windows optional).
-4. Validate memory ownership/lifecycle (no leaks, no double free, deterministic close).
-5. Run protocol parity tests against both codecs.
 
 ## Argument Passing Model (nf-python style, Arrow-native)
 
@@ -156,7 +144,7 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 
 1. Add protocol validation guards (missing batch, schema mismatch, version mismatch).
 2. Add deterministic temp/scratch lifecycle and cleanup.
-3. Add config knobs (`executable`, mode stream/file, keep-scratch, codec).
+3. Add config knobs (`executable`, mode stream/file, keep-scratch).
 4. Improve diagnostics (stderr capture, call id in exceptions).
 
 ### Phase 4 - Optional performance path
@@ -185,17 +173,6 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 
 - multiple Nextflow versions supported by this plugin baseline
 - R versions used in CI matrix
-- codec matrix: `arrow-java` and `nanoarrow-jni`
-
-### Benchmark suite (required before codec default change)
-
-- Compare both codecs on the same protocol cases:
-  - small scalar/map payloads
-  - deep nested list/map payloads
-  - medium and large table payloads
-- Measure wall-clock latency, peak RSS, and CPU time.
-- Include cold-start and warm-run measurements.
-- Only switch default codec if JNI shows clear win without regression in correctness/stability.
 
 ## MVP Acceptance Criteria
 
@@ -204,7 +181,6 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 - End-to-end call succeeds for table input/output.
 - End-to-end call succeeds for nested list/map input/output.
 - End-to-end call fails with structured error for deliberate R error.
-- Both codecs pass the same protocol conformance tests.
 - Tests pass in CI.
 
 ## Suggested Initial Repository Tasks
@@ -213,8 +189,7 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 2. Add `IpcCodec` abstraction and Arrow Java codec implementation.
 3. Add `src/main/resources/nfr_launcher.R` and minimal runtime contract.
 4. Add integration example pipeline under `validation/`.
-5. Add JNI module scaffold for nanoarrow codec.
-6. Add protocol doc under `README.md` once MVP is green.
+5. Add protocol doc under `README.md` once MVP is green.
 
 ## Risks and Mitigations
 
@@ -224,8 +199,6 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
   - **Mitigation:** stream mode first; avoid materializing unnecessary copies.
 - **Risk:** ambiguous type conversions.
   - **Mitigation:** keep v1 type contract narrow and explicit.
-- **Risk:** JNI portability and native loading failures.
-  - **Mitigation:** keep Arrow Java as stable default; gate JNI as opt-in until CI/benchmark parity.
 
 ## Operating Principle
 
