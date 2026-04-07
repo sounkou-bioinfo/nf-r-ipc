@@ -28,7 +28,7 @@ class RExtension extends PluginExtensionPoint {
 
     private IpcCodec getCodec() {
         if (codec == null) {
-            codec = CodecFactory.create((String)null)
+            codec = CodecFactory.create()
         }
         return codec
     }
@@ -40,7 +40,7 @@ class RExtension extends PluginExtensionPoint {
 
     @Function
     Object rFunction(Map args, String code = '') {
-        assert !(code && args.containsKey('script')) : 'Cannot use both code and script options together'
+        validateCall(args, code)
 
         List<String> excludedKeys = ['function', 'script', '_executable', '_conda_env', '_r_libs', '_on_error']
         Map forwardedArgs = args.findAll { k, v -> !(k in excludedKeys) }
@@ -51,10 +51,12 @@ class RExtension extends PluginExtensionPoint {
         Path requestIpc = scratch.resolve('request.arrows')
         Path responseIpc = scratch.resolve('response.arrows')
 
+        String functionName = args.get('function') == null ? 'main' : String.valueOf(args.get('function'))
+
         Map<String,Object> control = [
             protocol_version: 1,
             call_id: callId,
-            function: (args.get('function') ?: ''),
+            function: functionName,
             script_mode: args.containsKey('script') ? 'path' : 'inline',
             script_ref: (args.get('script') ?: '<inline>'),
             payload_kind: 'value_graph',
@@ -176,6 +178,15 @@ class RExtension extends PluginExtensionPoint {
             throw new IllegalArgumentException("Invalid _on_error value: ${value}. Expected 'throw' or 'return'")
         }
         return value
+    }
+
+    private static void validateCall(Map args, String code) {
+        if (code && args.containsKey('script')) {
+            throw new IllegalArgumentException('Cannot use both code and script options together')
+        }
+        if (!code && !args.containsKey('script')) {
+            throw new IllegalArgumentException('Missing script or code argument')
+        }
     }
 
     private static boolean isError(Map<String,Object> control) {

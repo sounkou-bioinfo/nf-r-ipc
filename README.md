@@ -13,7 +13,7 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
-#> > Task :compileJava UP-TO-DATE
+#> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
 #> > Task :classes UP-TO-DATE
@@ -25,10 +25,18 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test UP-TO-DATE
+#> > Task :test
 #> 
-#> BUILD SUCCESSFUL in 412ms
-#> 9 actionable tasks: 9 up-to-date
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 3s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ## Install locally
@@ -37,8 +45,9 @@ Run this once before examples:
 
 ``` bash
 make install
+#> make[1]: Entering directory '/root/nf-r-ipc'
 #> ./gradlew install
-#> > Task :compileJava UP-TO-DATE
+#> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
 #> > Task :classes UP-TO-DATE
@@ -46,10 +55,23 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
-#> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 405ms
-#> 7 actionable tasks: 7 up-to-date
+#> > Task :installPlugin
+#> Plugin nf-r-ipc installed successfully!
+#> Installation location: /root/.nextflow/plugins
+#> Installation location determined by - Default location (~/.nextflow/plugins)
+#> 
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 844ms
+#> 6 actionable tasks: 1 executed, 5 up-to-date
+#> make[1]: Leaving directory '/root/nf-r-ipc'
 ```
 
 ## Example Nextflow pipeline
@@ -96,7 +118,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca77c88d65.nf` [sharp_gautier] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c739a807f.nf` [zen_mercator] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -145,7 +167,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca4fc3bef8.nf` [lethal_tesla] DSL2 - revision: 2774f29512
+#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c4df19da8.nf` [ridiculous_kay] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -191,7 +213,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpKKN6lv/readme-nextflow-287ca5b4fe226.nf` [ridiculous_angela] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c15a8d95b.nf` [jovial_pasteur] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype

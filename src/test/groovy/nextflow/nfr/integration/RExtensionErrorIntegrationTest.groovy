@@ -25,7 +25,7 @@ class RExtensionErrorIntegrationTest extends Specification {
         setCodec(ext, fakeCodec)
 
         when:
-        ext.rFunction([function: 'boom', x: 1L], '')
+        ext.rFunction([function: 'boom', x: 1L], 'boom <- function(x) x')
 
         then:
         def e = thrown(CodecException)
@@ -41,7 +41,7 @@ class RExtensionErrorIntegrationTest extends Specification {
         setCodec(ext, fakeCodec)
 
         when:
-        def out = ext.rFunction([function: 'boom', x: 1L, _on_error: 'return'], '')
+        def out = ext.rFunction([function: 'boom', x: 1L, _on_error: 'return'], 'boom <- function(x) x')
 
         then:
         out.control.status == 'error'

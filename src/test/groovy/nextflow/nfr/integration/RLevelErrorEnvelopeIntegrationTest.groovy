@@ -48,7 +48,7 @@ class RLevelErrorEnvelopeIntegrationTest extends Specification {
         setCodec(ext, codec)
 
         when:
-        ext.rFunction([function: 'brokenFn', x: 1], '')
+        ext.rFunction([function: 'brokenFn', x: 1], 'brokenFn <- function(x) x')
 
         then:
         def e = thrown(CodecException)

@@ -19,3 +19,6 @@ install:
 # Publish the plugin
 release:
 	./gradlew releasePlugin
+
+rdm: 
+	R -e 'rmarkdown::render("README.Rmd")'

@@ -28,8 +28,20 @@ class RExtensionTest extends Specification {
         ext.rFunction([script: 'x.R'], 'print(1)')
 
         then:
-        AssertionError e = thrown()
+        def e = thrown(IllegalArgumentException)
         e.message.contains('Cannot use both code and script options together')
+    }
+
+    def 'should require either script or inline code'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        ext.rFunction([function: 'f'], '')
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message.contains('Missing script or code argument')
     }
 
     def 'should forward only non-reserved args'() {
@@ -55,6 +67,17 @@ class RExtensionTest extends Specification {
         result.runtime.command == ['/usr/bin/Rscript']
     }
 
+    def 'should default function name to main'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        def result = ext.rFunction([x: 1], 'main <- function(x) x')
+
+        then:
+        result.control.function == 'main'
+    }
+
     def 'should build conda path command when env looks like path'() {
         given:
         def ext = new TestRExtension()
@@ -64,7 +87,7 @@ class RExtensionTest extends Specification {
             _conda_env: '/opt/conda/envs/r-4.5',
             function: 'f',
             _on_error: 'return'
-        ], '')
+        ], 'f <- function() list()')
 
         then:
         result.runtime.command == ['/opt/conda/envs/r-4.5/bin/Rscript']
@@ -80,7 +103,7 @@ class RExtensionTest extends Specification {
             _executable: 'Rscript',
             _conda_env: 'r-env',
             function: 'f'
-        ], '')
+        ], 'f <- function() list()')
 
         then:
         def e = thrown(IllegalArgumentException)
