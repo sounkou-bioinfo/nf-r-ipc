@@ -180,6 +180,15 @@ The plugin now supports per-call runtime selectors similar to `nf-python`:
 - `_conda_env`: Conda env name or prefix path
 - `_r_libs`: value for R libs search path wiring
 
+Type mapping notes (current):
+
+- Groovy scalar numbers -> R numeric scalars (int64/float64 encoded)
+- Groovy lists/maps -> R lists / named lists
+- Groovy primitive arrays -> encoded as list values
+- R atomic vectors (`c(...)`) -> encoded as list values on return
+- `int64` values map to R `double` semantics in launcher responses
+- R `NULL` remains `null`; typed missing values are preserved via NA tags in the value graph
+
 Resolution order is call option, then config, then default:
 
 - `nfR.executable` (default `Rscript`)

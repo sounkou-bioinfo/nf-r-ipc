@@ -93,6 +93,17 @@ encode_nodes <- function(value, parent_id = NA_real_, key = NA_character_, index
     return(list(nodes = nodes, next_id = next_id, value_id = value_id))
   }
 
+  if (is.atomic(value) && length(value) > 1L) {
+    add_node("list")
+    for (i in seq_along(value)) {
+      elt <- value[[i]]
+      child <- encode_nodes(elt, parent_id = value_id, key = NA_character_, index = as.integer(i - 1L), nodes = nodes, next_id = next_id)
+      nodes <- child$nodes
+      next_id <- child$next_id
+    }
+    return(list(nodes = nodes, next_id = next_id, value_id = value_id))
+  }
+
   if (length(value) == 1L && is.logical(value) && is.na(value)) {
     add_node("na_logical")
     return(list(nodes = nodes, next_id = next_id, value_id = value_id))
@@ -123,7 +134,7 @@ encode_nodes <- function(value, parent_id = NA_real_, key = NA_character_, index
     return(list(nodes = nodes, next_id = next_id, value_id = value_id))
   }
 
-  if ((is.integer(value) || (is.double(value) && is.finite(value) && floor(value) == value)) && length(value) == 1L) {
+  if (is.integer(value) && length(value) == 1L) {
     add_node("int64", v_int64 = as.numeric(value))
     return(list(nodes = nodes, next_id = next_id, value_id = value_id))
   }
@@ -222,11 +233,14 @@ safe_eval <- function(req) {
     stop(sprintf("Function not found in R session: %s", fn_name))
   }
 
-  if (is.list(req$data) && !is.null(names(req$data))) {
-    do.call(fn, req$data)
-  } else {
-    fn(req$data)
+  if (is.list(req$data)) {
+    if (!is.null(names(req$data)) || length(req$data) == 0L) {
+      return(do.call(fn, req$data))
+    }
+    return(fn(req$data))
   }
+
+  fn(req$data)
 }
 
 req <- read_request(request_ipc)

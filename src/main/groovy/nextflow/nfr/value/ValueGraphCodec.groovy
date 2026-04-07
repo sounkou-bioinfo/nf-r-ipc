@@ -8,6 +8,7 @@ import java.util.HashMap
 import java.util.LinkedHashMap
 import java.util.List
 import java.util.Map
+import java.lang.reflect.Array
 
 @CompileStatic
 class ValueGraphCodec {
@@ -98,6 +99,15 @@ class ValueGraphCodec {
             List listValue = (List)value
             for (int i = 0; i < listValue.size(); i++) {
                 appendNode(nodes, nextId, id, null, i, listValue.get(i))
+            }
+            return id
+        }
+
+        if (value.getClass().isArray()) {
+            nodes.add(new ValueNode(id, parentId, key, index, ValueGraphTag.LIST, null, null, null, null))
+            int n = Array.getLength(value)
+            for (int i = 0; i < n; i++) {
+                appendNode(nodes, nextId, id, null, i, Array.get(value, i))
             }
             return id
         }
