@@ -46,6 +46,16 @@ decode_value <- function(nodes, id) {
     return(out)
   }
 
+  if (tag == "data_frame") {
+    cols <- list()
+    if (nrow(children) == 0) return(data.frame())
+    for (i in seq_len(nrow(children))) {
+      key <- children$key[[i]]
+      cols[[key]] <- decode_value(nodes, children$value_id[[i]])
+    }
+    return(as.data.frame(cols, stringsAsFactors = FALSE))
+  }
+
   stop(sprintf("Unsupported tag: %s", as.character(tag)))
 }
 
@@ -84,6 +94,16 @@ encode_nodes <- function(value, parent_id = NA_real_, key = NA_character_, index
   }
 
   if (is.list(value) && !is.null(names(value))) {
+    if (is_data_frame_shape(value)) {
+      add_node("data_frame")
+      for (nm in names(value)) {
+        child <- encode_nodes(value[[nm]], parent_id = value_id, key = nm, index = NA_integer_, nodes = nodes, next_id = next_id)
+        nodes <- child$nodes
+        next_id <- child$next_id
+      }
+      return(list(nodes = nodes, next_id = next_id, value_id = value_id))
+    }
+
     add_node("map")
     for (nm in names(value)) {
       child <- encode_nodes(value[[nm]], parent_id = value_id, key = nm, index = NA_integer_, nodes = nodes, next_id = next_id)
@@ -168,6 +188,67 @@ read_request <- function(path) {
   list(control = control, data = decoded)
 }
 
+is_record_like <- function(x) {
+  is.list(x) && !is.null(names(x)) && length(names(x)) > 0L
+}
+
+is_data_frame_shape <- function(x) {
+  if (!is.list(x) || is.null(names(x)) || length(x) == 0L) return(FALSE)
+  scalar_col <- function(col) {
+    if (!is.list(col)) return(FALSE)
+    for (i in seq_along(col)) {
+      item <- col[[i]]
+      if (is.null(item) || (length(item) == 1L && is.atomic(item))) {
+        next
+      }
+      return(FALSE)
+    }
+    TRUE
+  }
+  if (!all(vapply(x, scalar_col, logical(1)))) return(FALSE)
+  lengths <- vapply(x, length, integer(1))
+  length(unique(lengths)) == 1L
+}
+
+is_record_list <- function(x) {
+  if (!is.list(x) || length(x) == 0L) return(FALSE)
+  all(vapply(x, is_record_like, logical(1)))
+}
+
+record_list_to_data_frame <- function(rows) {
+  keys <- unique(unlist(lapply(rows, names), use.names = FALSE))
+  if (length(keys) == 0L) return(data.frame())
+
+  cols <- lapply(keys, function(k) {
+    unlist(lapply(rows, function(r) if (k %in% names(r)) r[[k]] else NA), use.names = FALSE)
+  })
+  names(cols) <- keys
+  as.data.frame(cols, stringsAsFactors = FALSE)
+}
+
+normalize_arg_for_r <- function(x) {
+  if (inherits(x, "data.frame")) return(x)
+  if (is_record_list(x)) return(record_list_to_data_frame(x))
+  x
+}
+
+normalize_result_for_wire <- function(x) {
+  if (inherits(x, "data.frame")) {
+    return(lapply(seq_len(nrow(x)), function(i) as.list(x[i, , drop = FALSE])))
+  }
+  if (is.list(x)) {
+    if (is.null(names(x))) {
+      return(lapply(x, normalize_result_for_wire))
+    }
+    out <- list()
+    for (nm in names(x)) {
+      out[[nm]] <- normalize_result_for_wire(x[[nm]])
+    }
+    return(out)
+  }
+  x
+}
+
 build_response_frame <- function(control, value) {
   out_nodes <- encode_nodes(value)
   node_df <- do.call(rbind, out_nodes$nodes)
@@ -234,10 +315,11 @@ safe_eval <- function(req) {
   }
 
   if (is.list(req$data)) {
+    normalized <- lapply(req$data, normalize_arg_for_r)
     if (!is.null(names(req$data)) || length(req$data) == 0L) {
-      return(do.call(fn, req$data))
+      return(do.call(fn, normalized))
     }
-    return(fn(req$data))
+    return(fn(normalized))
   }
 
   fn(req$data)
@@ -247,6 +329,7 @@ req <- read_request(request_ipc)
 
 result_df <- tryCatch({
   value <- safe_eval(req)
+  value <- normalize_result_for_wire(value)
   resp_control <- list()
   resp_control[["protocol_version"]] <- as.integer(req$control$protocol_version %||% 1L)
   resp_control[["call_id"]] <- as.character(req$control$call_id %||% "")

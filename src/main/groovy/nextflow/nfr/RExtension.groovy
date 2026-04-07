@@ -100,6 +100,42 @@ class RExtension extends PluginExtensionPoint {
         ]
     }
 
+    @Function
+    List<Map<String,Object>> rRecords(Map args, String code = '') {
+        Object out = rFunction(args, code)
+        if (!(out instanceof Map)) {
+            throw new CodecException('Invalid rRecords response envelope')
+        }
+
+        Object data = ((Map)out).get('decoded_data')
+        if (data instanceof List && isRecordList((List)data)) {
+            if (isSingleWrapperList((List)data)) {
+                Object unwrapped = ((Map)((List)data).get(0)).values().first()
+                if (unwrapped instanceof List && isRecordList((List)unwrapped)) {
+                    return (List<Map<String,Object>>)unwrapped
+                }
+                if (unwrapped instanceof Map && isColumnMap((Map)unwrapped)) {
+                    return columnMapToRecords((Map<String,Object>)unwrapped)
+                }
+            }
+            return (List<Map<String,Object>>)data
+        }
+        if (data instanceof Map && isColumnMap((Map)data)) {
+            return columnMapToRecords((Map<String,Object>)data)
+        }
+        if (data instanceof Map && ((Map)data).size() == 1) {
+            Object only = ((Map)data).values().first()
+            if (only instanceof List && isRecordList((List)only)) {
+                return (List<Map<String,Object>>)only
+            }
+            if (only instanceof Map && isColumnMap((Map)only)) {
+                return columnMapToRecords((Map<String,Object>)only)
+            }
+        }
+
+        throw new CodecException('rRecords expects list-of-records or map-of-columns result')
+    }
+
     private Map<String,Object> resolveLaunch(Map args) {
         String executableOpt = firstNonBlank(
             args?.get('_executable') as String,
@@ -246,5 +282,76 @@ class RExtension extends PluginExtensionPoint {
         String errorClass = control.get('error_class') == null ? 'RError' : String.valueOf(control.get('error_class'))
         String errorMessage = control.get('error_message') == null ? 'unknown error' : String.valueOf(control.get('error_message'))
         throw new CodecException("rFunction failed [call_id=${callId}] ${errorClass}: ${errorMessage}")
+    }
+
+    private static boolean isRecordList(List rows) {
+        for (Object row : rows) {
+            if (!(row instanceof Map)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static boolean isSingleWrapperList(List rows) {
+        if (rows.size() != 1) {
+            return false
+        }
+        Object row = rows.get(0)
+        return row instanceof Map && ((Map)row).size() == 1
+    }
+
+    private static boolean isColumnMap(Map map) {
+        if (map.isEmpty()) {
+            return true
+        }
+        Integer expected = null
+        for (Object value : map.values()) {
+            if (!(value instanceof List)) {
+                return false
+            }
+            List col = (List)value
+            if (!isScalarColumn(col)) {
+                return false
+            }
+            int n = col.size()
+            if (expected == null) {
+                expected = n
+            } else if (expected != n) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static boolean isScalarColumn(List col) {
+        for (Object item : col) {
+            if (item == null) {
+                continue
+            }
+            if (item instanceof Map || item instanceof List) {
+                return false
+            }
+            if (item.getClass().isArray()) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static List<Map<String,Object>> columnMapToRecords(Map<String,Object> cols) {
+        if (cols.isEmpty()) {
+            return []
+        }
+        int n = ((List)cols.values().first()).size()
+        List<Map<String,Object>> out = new ArrayList<>(n)
+        for (int i = 0; i < n; i++) {
+            Map<String,Object> row = new LinkedHashMap<>()
+            cols.each { String k, Object v ->
+                row.put(k, ((List)v).get(i))
+            }
+            out.add(row)
+        }
+        return out
     }
 }

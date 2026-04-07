@@ -166,6 +166,97 @@ workflow {
 }
 ```
 
+## Recursive data frame-like values
+
+This example shows a recursive payload where a data frame-like structure is represented as a named map of equal-length columns. The value graph tags this shape as `data_frame`, decodes it to an R `data.frame`, and returns list-of-records after mutation.
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'mutate_df',
+        tbl: [
+            [sample: 'S1', x: 1, y: 2],
+            [sample: 'S2', x: 3, y: 4]
+        ],
+        meta: [batch: 'B1']
+    ], '''
+        mutate_df <- function(tbl, meta) {
+          stopifnot(is.data.frame(tbl))
+          tbl$score <- tbl$x + tbl$y
+          list(tbl = tbl, meta = meta)
+        }
+    ''')
+
+    println "status=${out.control.status ?: 'ok'}"
+    println "decoded=${out.decoded_data}"
+}
+```
+
+## Channel-oriented records helper
+
+`rRecords(...)` is a channel-friendly helper that guarantees list-of-records output. You can pass this result directly to `Channel.fromList(...)`.
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rRecords } from 'plugin/nf-r-ipc'
+
+workflow {
+    def rows = rRecords([
+        function: 'make_rows',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    Channel.fromList(rows)
+      .map { row -> [sample: row.sample, x2: row.x * 2] }
+      .view { row -> "ROW ${row.sample} x2=${row.x2}" }
+}
+```
+
+## Channel error branching
+
+Use `_on_error: 'return'` when you want to keep channel flow alive and branch/filter on envelope status.
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def ok = rFunction([
+        function: 'ok_fn',
+        _on_error: 'return',
+        _executable: 'Rscript',
+        sample: 'S1'
+    ], '''
+        ok_fn <- function(sample) {
+          list(sample = sample, status = 'ok')
+        }
+    ''')
+
+    def err = rFunction([
+        function: 'boom_fn',
+        _on_error: 'return',
+        _executable: 'Rscript',
+        sample: 'S2'
+    ], '''
+        boom_fn <- function(sample) {
+          stop('boom in channel flow')
+        }
+    ''')
+
+    Channel.of(ok, err)
+      .map { e -> [status: e.control.status ?: 'ok', payload: e.decoded_data, error: e.control.error_message] }
+      .view { row -> "status=${row.status} payload=${row.payload} error=${row.error}" }
+}
+```
+
 ## Error-handling modes
 
 - Default: throw on `status=error`
@@ -189,6 +280,9 @@ Type mapping notes (current):
   - Groovy lists/maps map to R lists / named lists
   - Groovy primitive arrays are encoded as list values
   - R atomic vectors (`c(...)`) are encoded as list values on return
+  - list-of-records arguments are materialized as `data.frame` when passed to R functions
+  - R `data.frame` results are normalized back to list-of-records on return
+  - recursive data-frame-like maps (named equal-length list columns) are tagged as `data_frame` in the value graph
 - **`int64` treatment in R**
   - R has no native `int64` scalar type in base runtime
   - launcher responses map `int64` wire values to R `double` semantics

@@ -12,7 +12,8 @@
 README.html
 
 # Local scripts/binaries
-bin/
+bin/*
+!bin/check-readme-sync.sh
 
 # Ignore Gradle build output directory
 build

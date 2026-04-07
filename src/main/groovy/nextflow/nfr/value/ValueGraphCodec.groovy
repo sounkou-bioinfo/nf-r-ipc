@@ -86,6 +86,9 @@ class ValueGraphCodec {
         }
 
         if (value instanceof Map) {
+            if (isDataFrameShape((Map)value)) {
+                return appendDataFrame(nodes, nextId, parentId, key, index, (Map)value)
+            }
             nodes.add(new ValueNode(id, parentId, key, index, ValueGraphTag.MAP, null, null, null, null))
             Map mapValue = (Map)value
             mapValue.each { k, v ->
@@ -147,6 +150,8 @@ class ValueGraphCodec {
                 return NAValue.DOUBLE
             case ValueGraphTag.NA_CHARACTER:
                 return NAValue.CHARACTER
+            case ValueGraphTag.DATA_FRAME:
+                return decodeDataFrame(node, children)
             case ValueGraphTag.STRING:
                 return node.vString
             case ValueGraphTag.BOOL:
@@ -181,5 +186,80 @@ class ValueGraphCodec {
             default:
                 throw new IllegalArgumentException("Unsupported value node tag: ${node.tag}")
         }
+    }
+
+    private static long appendDataFrame(
+        List<ValueNode> nodes,
+        long[] nextId,
+        Long parentId,
+        String key,
+        Integer index,
+        Map value
+    ) {
+        long id = nextId[0]++
+        nodes.add(new ValueNode(id, parentId, key, index, ValueGraphTag.DATA_FRAME, null, null, null, null))
+
+        value.each { k, v ->
+            appendNode(nodes, nextId, id, String.valueOf(k), null, v)
+        }
+        return id
+    }
+
+    private static boolean isDataFrameShape(Map value) {
+        if (value == null || value.isEmpty()) {
+            return false
+        }
+        List<Integer> lengths = new ArrayList<>()
+        for (Object v : value.values()) {
+            if (!(v instanceof List)) {
+                return false
+            }
+            List col = (List)v
+            if (!isScalarColumn(col)) {
+                return false
+            }
+            lengths.add(col.size())
+        }
+        if (lengths.isEmpty()) {
+            return false
+        }
+        int first = lengths.get(0)
+        for (Integer n : lengths) {
+            if (n != first) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static boolean isScalarColumn(List col) {
+        for (Object item : col) {
+            if (item == null || item instanceof NAValue) {
+                continue
+            }
+            if (item instanceof List || item instanceof Map) {
+                return false
+            }
+            if (item.getClass().isArray()) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static Map<String,Object> decodeDataFrame(ValueNode node, Map<Long, List<ValueNode>> children) {
+        Map<String,Object> columns = new LinkedHashMap<>()
+        List<ValueNode> dfChildren = children.get(node.valueId) ?: Collections.<ValueNode>emptyList()
+        for (ValueNode child : dfChildren) {
+            if (child.key == null) {
+                throw new IllegalArgumentException("data_frame child missing key for parent ${node.valueId}")
+            }
+            Object decoded = decodeNode(child, children)
+            if (!(decoded instanceof List)) {
+                throw new IllegalArgumentException("data_frame column must decode to list for key=${child.key}")
+            }
+            columns.put(child.key, decoded)
+        }
+        return columns
     }
 }

@@ -42,4 +42,21 @@ class ValueGraphCodecTest extends Specification {
         output.nullValue == null
         output.naDouble == NAValue.DOUBLE
     }
+
+    def 'should encode data-frame-like map as data_frame tag and roundtrip'() {
+        given:
+        def input = [
+            sample: ['S1', 'S2'],
+            x: [1L, 3L],
+            y: [2d, 4d]
+        ]
+
+        when:
+        def nodes = ValueGraphCodec.encode(input)
+        def output = ValueGraphCodec.decode(nodes)
+
+        then:
+        nodes.any { it.tag == ValueGraphTag.DATA_FRAME }
+        output == input
+    }
 }

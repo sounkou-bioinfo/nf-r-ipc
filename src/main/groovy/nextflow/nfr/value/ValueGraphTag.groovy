@@ -9,6 +9,7 @@ enum ValueGraphTag {
     NA_INTEGER('na_integer'),
     NA_DOUBLE('na_double'),
     NA_CHARACTER('na_character'),
+    DATA_FRAME('data_frame'),
     LIST('list'),
     MAP('map'),
     STRING('string'),
