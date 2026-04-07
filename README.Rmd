@@ -180,14 +180,26 @@ The plugin now supports per-call runtime selectors similar to `nf-python`:
 - `_conda_env`: Conda env name or prefix path
 - `_r_libs`: value for R libs search path wiring
 
+`_executable` and `_conda_env` are mutually exclusive.
+
 Type mapping notes (current):
 
-- Groovy scalar numbers -> R numeric scalars (int64/float64 encoded)
-- Groovy lists/maps -> R lists / named lists
-- Groovy primitive arrays -> encoded as list values
-- R atomic vectors (`c(...)`) -> encoded as list values on return
-- `int64` values map to R `double` semantics in launcher responses
-- R `NULL` remains `null`; typed missing values are preserved via NA tags in the value graph
+- **Scalars and containers**
+  - Groovy scalar numbers map to encoded `int64`/`float64` values
+  - Groovy lists/maps map to R lists / named lists
+  - Groovy primitive arrays are encoded as list values
+  - R atomic vectors (`c(...)`) are encoded as list values on return
+- **`int64` treatment in R**
+  - R has no native `int64` scalar type in base runtime
+  - launcher responses map `int64` wire values to R `double` semantics
+- **Missing values (`NA`) vs `NULL`**
+  - R `NULL` maps to wire `null`
+  - typed R missing values map to typed NA tags in the value graph:
+    - `NA` logical -> `na_logical`
+    - `NA_integer_` -> `na_integer`
+    - `NA_real_` -> `na_double`
+    - `NA_character_` -> `na_character`
+  - these tags are preserved across round-trip and remain distinct from `null`
 
 Resolution order is call option, then config, then default:
 
@@ -201,8 +213,6 @@ When `_conda_env` is set:
 - plugin resolves concrete `Rscript` path with:
   - `conda run -p <resolved_env_path> which Rscript`
   - then executes that resolved interpreter directly
-
-`_executable` and `_conda_env` are mutually exclusive.
 
 Conda executable resolution uses:
 

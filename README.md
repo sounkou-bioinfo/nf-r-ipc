@@ -25,18 +25,10 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test
+#> > Task :test UP-TO-DATE
 #> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 1s
-#> 8 actionable tasks: 1 executed, 7 up-to-date
+#> BUILD SUCCESSFUL in 436ms
+#> 8 actionable tasks: 8 up-to-date
 ```
 
 ## Install locally
@@ -45,7 +37,6 @@ Run this once before examples:
 
 ``` bash
 make install
-#> make[1]: Entering directory '/root/nf-r-ipc'
 #> ./gradlew install
 #> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
@@ -55,23 +46,10 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
+#> > Task :installPlugin UP-TO-DATE
 #> 
-#> > Task :installPlugin
-#> Plugin nf-r-ipc installed successfully!
-#> Installation location: /root/.nextflow/plugins
-#> Installation location determined by - Default location (~/.nextflow/plugins)
-#> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 473ms
-#> 6 actionable tasks: 1 executed, 5 up-to-date
-#> make[1]: Leaving directory '/root/nf-r-ipc'
+#> BUILD SUCCESSFUL in 412ms
+#> 6 actionable tasks: 6 up-to-date
 ```
 
 ## Example Nextflow pipeline
@@ -118,7 +96,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-66084529d7de4.nf` [drunk_mcclintock] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpFceQsP/readme-nextflow-668f3231ecb79.nf` [disturbed_lalande] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -167,7 +145,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-6608437dc852a.nf` [lonely_maxwell] DSL2 - revision: 2774f29512
+#> Launching `/tmp/RtmpFceQsP/readme-nextflow-668f375acd764.nf` [lethal_lalande] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -213,7 +191,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-66084244c6878.nf` [backstabbing_monod] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/RtmpFceQsP/readme-nextflow-668f36f9b6cce.nf` [thirsty_baekeland] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -241,15 +219,27 @@ The plugin now supports per-call runtime selectors similar to
 - `_conda_env`: Conda env name or prefix path
 - `_r_libs`: value for R libs search path wiring
 
+`_executable` and `_conda_env` are mutually exclusive.
+
 Type mapping notes (current):
 
-- Groovy scalar numbers -\> R numeric scalars (int64/float64 encoded)
-- Groovy lists/maps -\> R lists / named lists
-- Groovy primitive arrays -\> encoded as list values
-- R atomic vectors (`c(...)`) -\> encoded as list values on return
-- `int64` values map to R `double` semantics in launcher responses
-- R `NULL` remains `null`; typed missing values are preserved via NA
-  tags in the value graph
+- **Scalars and containers**
+  - Groovy scalar numbers map to encoded `int64`/`float64` values
+  - Groovy lists/maps map to R lists / named lists
+  - Groovy primitive arrays are encoded as list values
+  - R atomic vectors (`c(...)`) are encoded as list values on return
+- **`int64` treatment in R**
+  - R has no native `int64` scalar type in base runtime
+  - launcher responses map `int64` wire values to R `double` semantics
+- **Missing values (`NA`) vs `NULL`**
+  - R `NULL` maps to wire `null`
+  - typed R missing values map to typed NA tags in the value graph:
+    - `NA` logical -\> `na_logical`
+    - `NA_integer_` -\> `na_integer`
+    - `NA_real_` -\> `na_double`
+    - `NA_character_` -\> `na_character`
+  - these tags are preserved across round-trip and remain distinct from
+    `null`
 
 Resolution order is call option, then config, then default:
 
@@ -264,8 +254,6 @@ When `_conda_env` is set:
 - plugin resolves concrete `Rscript` path with:
   - `conda run -p <resolved_env_path> which Rscript`
   - then executes that resolved interpreter directly
-
-`_executable` and `_conda_env` are mutually exclusive.
 
 Conda executable resolution uses:
 
