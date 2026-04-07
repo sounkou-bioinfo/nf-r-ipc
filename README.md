@@ -35,7 +35,7 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 3s
+#> BUILD SUCCESSFUL in 1s
 #> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
@@ -69,7 +69,7 @@ make install
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 844ms
+#> BUILD SUCCESSFUL in 473ms
 #> 6 actionable tasks: 1 executed, 5 up-to-date
 #> make[1]: Leaving directory '/root/nf-r-ipc'
 ```
@@ -118,7 +118,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c739a807f.nf` [zen_mercator] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-66084529d7de4.nf` [drunk_mcclintock] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -127,7 +127,7 @@ workflow {
 #> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[Rscript]
-#> OK decoded=[sample:S1, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
+#> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
 #> ERR status=error
 ```
 
@@ -167,7 +167,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c4df19da8.nf` [ridiculous_kay] DSL2 - revision: 2774f29512
+#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-6608437dc852a.nf` [lonely_maxwell] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -176,7 +176,7 @@ workflow {
 #> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
-#> OK decoded=[sample:S1, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
+#> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
 ```
 
 Expected output shape:
@@ -213,7 +213,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpHT2YW6/readme-nextflow-6203c15a8d95b.nf` [jovial_pasteur] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/Rtmpv2H1Dz/readme-nextflow-66084244c6878.nf` [backstabbing_monod] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -222,7 +222,7 @@ workflow {
 #> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
-#> OK decoded=[sample:S1-external, values:[1, 2, 3], meta:[batch:B1, flags:[true, false, null]]]
+#> OK decoded=[sample:S1-external, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
 ```
 
 ## Error-handling modes
@@ -240,6 +240,16 @@ The plugin now supports per-call runtime selectors similar to
 - `_executable`: explicit `Rscript` path (or interpreter name)
 - `_conda_env`: Conda env name or prefix path
 - `_r_libs`: value for R libs search path wiring
+
+Type mapping notes (current):
+
+- Groovy scalar numbers -\> R numeric scalars (int64/float64 encoded)
+- Groovy lists/maps -\> R lists / named lists
+- Groovy primitive arrays -\> encoded as list values
+- R atomic vectors (`c(...)`) -\> encoded as list values on return
+- `int64` values map to R `double` semantics in launcher responses
+- R `NULL` remains `null`; typed missing values are preserved via NA
+  tags in the value graph
 
 Resolution order is call option, then config, then default:
 
