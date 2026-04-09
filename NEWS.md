@@ -4,7 +4,7 @@ All notable changes to `nf-r-ipc` are documented in this file.
 
 ## [Unreleased]
 
-## [0.2.0]
+## [0.2.0] - 2026-04-09
 
 ### Added
 - Channel-focused helper APIs:
@@ -25,15 +25,19 @@ All notable changes to `nf-r-ipc` are documented in this file.
   - `validation/channels_main.nf`
   - `validation/channels_error_main.nf`
   - `validation/conda_script_main.nf`
+- Missing-value helper predicates/utilities in plugin API:
+  - `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
+  - `naType`, `isMissing`, `coalesce`, `assertNotMissing`
 
 ### Changed
 - Runtime diagnostics now include launcher output tail in thrown errors.
 - CI workflows now include README render checks and conda integration coverage.
 - Value-graph decode now enforces strict structural validation (single root, parent existence, key/index constraints, scalar value-column rules).
 - Table mode now fails fast on invalid shapes instead of best-effort fallback.
-- Added missing-value helper predicates/utilities in plugin API:
-  - `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
-  - `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+- README reorganized into a didactic, end-to-end flow with concept-first sections and executable examples.
+
+### Fixed
+- Preserved named `NULL` entries in R map outputs (no key dropping during normalization).
 - Removed SLF4J provider mismatch runtime warnings by excluding transitive `slf4j-api` from Arrow dependencies.
 
 ## [0.1.0]
