@@ -25,7 +25,7 @@ tasks.withType(Test).configureEach {
     jvmArgs '--add-opens=java.base/java.nio=ALL-UNNAMED'
 }
 
-version = '0.1.0'
+version = '0.2.0'
 
 nextflowPlugin {
     nextflowVersion = '24.10.0'

@@ -1,19 +1,19 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.Rmd. Please edit this file. -->
 
 # nf-r IPC plugin
 
-`nf-r-ipc` is a Nextflow plugin prototype for Groovy/R interop using
-Arrow IPC and a value-graph payload for nested list/map arguments.
+`nf-r-ipc` is a Nextflow plugin for Groovy/R interop using Arrow IPC
+only.
 
-The R launcher uses `nanoarrow::read_nanoarrow()` and
-`nanoarrow::write_nanoarrow()` for Arrow IPC stream I/O.
+The implementation uses a strict request/response contract over Arrow
+and runs R through an external `Rscript` launcher (`nanoarrow` on the R
+side).
 
-Recent changes are tracked in `NEWS.md`.
+- Protocol and type contract: `CONTRACT.md`
+- Change log: `NEWS.md`
 
-The strict wire/type contract is defined in `CONTRACT.md`.
-
-## Build and test
+## Build and install
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
@@ -22,14 +22,14 @@ The strict wire/type contract is defined in `CONTRACT.md`.
 #> > Task :processResources UP-TO-DATE
 #> > Task :classes UP-TO-DATE
 #> > Task :extensionPoints UP-TO-DATE
-#> > Task :jar UP-TO-DATE
-#> > Task :packagePlugin UP-TO-DATE
-#> > Task :assemble UP-TO-DATE
+#> > Task :jar
+#> > Task :packagePlugin
+#> > Task :assemble
 #> > Task :compileTestJava NO-SOURCE
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test
+#> > Task :test UP-TO-DATE
 #> 
 #> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
 #> 
@@ -39,13 +39,9 @@ The strict wire/type contract is defined in `CONTRACT.md`.
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 1s
-#> 8 actionable tasks: 1 executed, 7 up-to-date
+#> BUILD SUCCESSFUL in 686ms
+#> 8 actionable tasks: 2 executed, 6 up-to-date
 ```
-
-## Install locally
-
-Run this once before examples:
 
 ``` bash
 make install
@@ -72,410 +68,249 @@ make install
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 461ms
+#> BUILD SUCCESSFUL in 492ms
 #> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
-## Example Nextflow pipeline
+## Mental model
 
-The repository includes `validation/main.nf` using:
+Think of `rFunction(...)` as returning an envelope:
 
-- `include { rFunction } from 'plugin/nf-r-ipc'`
-- nested list/map arguments
-- `_on_error: 'return'` call-level option
+- `control`: status and diagnostics
+- `decoded_data`: decoded payload (nested maps/lists, records, missing
+  markers)
+- `runtime`: interpreter metadata
 
-``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
+Core entry points:
 
-workflow {
-    def ok = rFunction([
-        function: 'echo',
-        _executable: 'Rscript',
-        sample: 'S1',
-        values: [1, 2, 3],
-        meta: [batch: 'B1', flags: [true, false, null]]
-    ], '''
-        echo <- function(sample, values, meta) {
-          list(sample = sample, values = values, meta = meta)
-        }
-    ''')
+- `rFunction(args, codeOrScript)` -\> full envelope
+- `rTable(args, codeOrScript)` -\> list-of-records table result
+- `rRecords(args, codeOrScript)` -\> list-of-records helper
+- `channelFromR(args, codeOrScript)` -\> channel directly
 
-    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
-    println "OK runtime=${ok.runtime.command}"
-    println "OK decoded=${ok.decoded_data}"
-
-    def err = rFunction([
-        function: 'explode',
-        _on_error: 'return',
-        _executable: 'Rscript',
-        trigger: 'error'
-    ], '''
-        explode <- function(trigger) {
-          stop('boom from R runtime')
-        }
-    ''')
-    println "ERR status=${err.control.status ?: 'ok'}"
-}
-#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
-#> 
-#>  N E X T F L O W   ~  version 25.10.2
-#> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f5c9d5bf4.nf` [sad_hilbert] DSL2 - revision: 3efd8eaaac
-#> 
-#> OK status=ok codec=arrow-java
-#> OK runtime=[Rscript]
-#> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
-#> ERR status=error
-```
-
-This example executes real inline R functions (`echo`, `explode`)
-through the bundled launcher and reports `status=ok`/`status=error`
-envelopes.
-
-### Quickstart summary
-
-- `rFunction(...)`: call inline/scripted R and get structured envelope
-  output.
-- `rTable(...)`: get table-mode results normalized as list-of-records.
-- `channelFromR(...)`: emit a channel directly from R-produced records.
-
-## Conda-backed example
-
-`validation/conda_main.nf` demonstrates `_conda_env` resolution, with
-`validation/nextflow.config` setting:
-
-- `plugins.id = 'nf-r-ipc'`
-- `nfR.conda_executable = '/root/miniconda3/bin/conda'`
+## First working call
 
 ``` nextflow
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
-    def condaPrefix = '/root/miniconda3'
-    if( !new File(condaPrefix).isDirectory() ) {
-        println "SKIP conda-backed example: missing ${condaPrefix}"
-        return
-    }
+  def out = rFunction([
+      function: 'echo',
+      _executable: 'Rscript',
+      sample: 'S1',
+      values: [1, 2, 3],
+      meta: [batch: 'B1', flags: [true, false, null]]
+  ], '''
+      echo <- function(sample, values, meta) {
+        list(sample = sample, values = values, meta = meta)
+      }
+  ''')
 
-    def ok = rFunction([
-        function: 'echo',
-        _conda_env: condaPrefix,
-        sample: 'S1',
-        values: [1, 2, 3],
-        meta: [batch: 'B1', flags: [true, false, null]]
-    ], '''
-        echo <- function(sample, values, meta) {
-          list(sample = sample, values = values, meta = meta)
-        }
-    ''')
-
-    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
-    println "OK runtime=${ok.runtime.command}"
-    println "OK decoded=${ok.decoded_data}"
+  assert out.control.status == 'ok'
+  println "runtime=${out.runtime.command}"
+  println "decoded=${out.decoded_data}"
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f4a389fd2.nf` [clever_gilbert] DSL2 - revision: 352621cd7e
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb917cbd1bd5.nf` [adoring_magritte] DSL2 - revision: 02574ee18f
 #> 
-#> OK status=ok codec=arrow-java
-#> OK runtime=[/usr/bin/Rscript]
-#> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
+#> runtime=[Rscript]
+#> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
 ```
 
-Expected output shape:
+## Type mapping
 
-- `OK status=ok codec=arrow-java`
-- `OK runtime=[...]`
-- `ERR status=error`
+Current type behavior:
 
-## External R script with Conda
+- Scalars: integers/doubles/booleans/strings
+- Containers: maps/lists (recursive)
+- Table-like values:
+  - list-of-records inputs are materialized as `data.frame` in R
+  - `data.frame` outputs are normalized to list-of-records
+  - map-of-equal-length scalar-columns uses `data_frame` tag
+- `int64` in R is represented via R numeric semantics (`double`)
 
-`validation/conda_script_main.nf` uses `script:` to load R functions
-from:
+### Missing values: `NULL` vs typed `NA`
 
-- `validation/scripts/echo_external.R`
+The plugin keeps these distinct:
+
+- `NULL` -\> `null`
+- `NA` -\> typed markers (`LOGICAL`, `INTEGER`, `DOUBLE`, `CHARACTER`)
+
+Use helper functions from the plugin API:
+
+- Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`,
+  `isNADouble`, `isNACharacter`
+- Utilities: `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+
+``` nextflow
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; assertNotMissing } from 'plugin/nf-r-ipc'
+
+workflow {
+  def out = rFunction([
+      function: 'emit_missing',
+      _on_error: 'return',
+      _executable: 'Rscript'
+  ], '''
+      emit_missing <- function() {
+        list(
+          null_value = NULL,
+          na_logical = NA,
+          na_integer = NA_integer_,
+          na_double = NA_real_,
+          na_character = NA_character_,
+          nested = list(NA_real_, NULL, NA_character_)
+        )
+      }
+  ''')
+
+  assert out.control.status == 'ok'
+
+  assert isNULL(out.decoded_data.null_value)
+  assert isNA(out.decoded_data.na_logical)
+  assert isNA(out.decoded_data.na_integer)
+  assert isNA(out.decoded_data.na_double)
+  assert isNA(out.decoded_data.na_character)
+
+  assert isNALogical(out.decoded_data.na_logical)
+  assert isNAInteger(out.decoded_data.na_integer)
+  assert isNADouble(out.decoded_data.na_double)
+  assert isNACharacter(out.decoded_data.na_character)
+
+  assert isNADouble(out.decoded_data.nested[0])
+  assert isNULL(out.decoded_data.nested[1])
+  assert isNACharacter(out.decoded_data.nested[2])
+
+  assert naType(out.decoded_data.na_double) == 'double'
+  assert isMissing(out.decoded_data.null_value)
+  assert isMissing(out.decoded_data.na_character)
+  assert !isMissing('ok')
+
+  assert coalesce(out.decoded_data.null_value, 'fallback-null') == 'fallback-null'
+  assert coalesce(out.decoded_data.na_integer, 99) == 99
+  assert coalesce('present', 'fallback') == 'present'
+
+  assert assertNotMissing('S1', 'sample_id') == 'S1'
+
+  println "decoded=${out.decoded_data}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb91416bc49e.nf` [ridiculous_allen] DSL2 - revision: 139bf87e1b
+#> 
+#> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
+```
+
+## Error handling modes
+
+- Default: throw on `status=error`
+- `_on_error: 'return'`: return envelope with `control.status='error'`
 
 ``` nextflow
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
-    def condaPrefix = '/root/miniconda3'
-    if( !new File(condaPrefix).isDirectory() ) {
-        println "SKIP external-script conda example: missing ${condaPrefix}"
-        return
-    }
+  def err = rFunction([
+      function: 'boom_fn',
+      _on_error: 'return',
+      _executable: 'Rscript'
+  ], '''
+      boom_fn <- function() {
+        stop('boom for diagnostics')
+      }
+  ''')
 
-    def ok = rFunction([
-        function: 'echo_external',
-        script: 'validation/scripts/echo_external.R',
-        _conda_env: condaPrefix,
-        sample: 'S1',
-        values: [1, 2, 3],
-        meta: [batch: 'B1', flags: [true, false, null]]
-    ])
-
-    println "OK status=${ok.control.status ?: 'ok'} codec=${ok.codec}"
-    println "OK runtime=${ok.runtime.command}"
-    println "OK decoded=${ok.decoded_data}"
+  assert err.control.status == 'error'
+  println "error_class=${err.control.error_class}"
+  println "error_message=${err.control.error_message}"
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f5dd18564.nf` [kickass_jepsen] DSL2 - revision: 558ef7cab4
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb9140435610.nf` [spontaneous_boyd] DSL2 - revision: e4d574c15c
 #> 
-#> OK status=ok codec=arrow-java
-#> OK runtime=[/usr/bin/Rscript]
-#> OK decoded=[sample:S1-external, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
+#> error_class=RRuntimeError
+#> error_message=boom for diagnostics
 ```
 
-## Recursive data frame-like values
+## Table and channels
 
-This example shows a recursive payload where a data frame-like structure
-is represented as a named map of equal-length columns. The value graph
-tags this shape as `data_frame`, decodes it to an R `data.frame`, and
-returns list-of-records after mutation.
-
-``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
-
-workflow {
-    def out = rFunction([
-        function: 'mutate_df',
-        tbl: [
-            [sample: 'S1', x: 1, y: 2],
-            [sample: 'S2', x: 3, y: 4]
-        ],
-        meta: [batch: 'B1']
-    ], '''
-        mutate_df <- function(tbl, meta) {
-          stopifnot(is.data.frame(tbl))
-          tbl$score <- tbl$x + tbl$y
-          list(tbl = tbl, meta = meta)
-        }
-    ''')
-
-    println "status=${out.control.status ?: 'ok'}"
-    println "decoded=${out.decoded_data}"
-}
-#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
-#> 
-#>  N E X T F L O W   ~  version 25.10.2
-#> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f352c772a.nf` [cranky_heisenberg] DSL2 - revision: beccbcb99f
-#> 
-#> status=ok
-#> decoded=[tbl:[[sample:S1, x:1.0, y:2.0, score:3.0], [sample:S2, x:3.0, y:4.0, score:7.0]], meta:[batch:B1]]
-```
-
-## Channel-oriented records helper
-
-`rRecords(...)` is a channel-friendly helper that guarantees
-list-of-records output. You can pass this result directly to
-`Channel.fromList(...)`.
-
-This follows the same pattern used by other Nextflow plugins that expose
-channel-native entry points (for example, SQL plugins exposing
-`channel.from...` factories): provide a plugin API that yields
-channel-friendly values and let the workflow compose standard channel
-operators.
-
-If you prefer a direct channel factory style, `channelFromR(...)`
-returns a channel directly:
-
-``` nextflow
-include { channelFromR } from 'plugin/nf-r-ipc'
-
-workflow {
-    ch = channelFromR([
-        function: 'make_rows',
-        _executable: 'Rscript'
-    ], '''
-        make_rows <- function() {
-          data.frame(
-            sample = c('S1', 'S2'),
-            x = c(1, 2),
-            stringsAsFactors = FALSE
-          )
-        }
-    ''')
-
-    ch.map { row -> [sample: row.sample, x3: row.x * 3] }
-      .view { row -> "ROW ${row.sample} x3=${row.x3}" }
-}
-#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
-#> 
-#>  N E X T F L O W   ~  version 25.10.2
-#> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f7ddf99d2.nf` [tender_bernard] DSL2 - revision: a76e8925f2
-#> 
-#> ROW S1 x3=3.0
-#> ROW S2 x3=6.0
-```
-
-`rTable(...)` is an alias for `rRecords(...)` with
-`_payload_kind: 'table'` set by default.
+Use `rTable(...)` when you want records directly:
 
 ``` nextflow
 include { rTable } from 'plugin/nf-r-ipc'
 
 workflow {
-    def rows = rTable([
-        function: 'make_rows',
-        _executable: 'Rscript'
-    ], '''
-        make_rows <- function() {
-          data.frame(
-            sample = c('S1', 'S2'),
-            x = c(1, 2),
-            stringsAsFactors = FALSE
-          )
-        }
-    ''')
+  def rows = rTable([
+      function: 'make_rows',
+      _executable: 'Rscript'
+  ], '''
+      make_rows <- function() {
+        data.frame(sample = c('S1','S2'), x = c(1,2), stringsAsFactors = FALSE)
+      }
+  ''')
 
-    println "rows=${rows}"
+  assert rows.size() == 2
+  println "rows=${rows}"
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f39aac7ef.nf` [maniac_ampere] DSL2 - revision: 588eb96d14
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb915da058a6.nf` [high_wilson] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
 
-`rFunction(...)` also supports table mode directly via
-`_payload_kind: 'table'` when you need raw envelope access.
-
-## Channel error branching
-
-Use `_on_error: 'return'` when you want to keep channel flow alive and
-branch/filter on envelope status.
+Use `channelFromR(...)` when you want channel-first style:
 
 ``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
+include { channelFromR; coalesce } from 'plugin/nf-r-ipc'
 
 workflow {
-    def ok = rFunction([
-        function: 'ok_fn',
-        _on_error: 'return',
-        _executable: 'Rscript',
-        sample: 'S1'
-    ], '''
-        ok_fn <- function(sample) {
-          list(sample = sample, status = 'ok')
-        }
-    ''')
+  ch = channelFromR([
+      function: 'make_rows',
+      _executable: 'Rscript'
+  ], '''
+      make_rows <- function() {
+        data.frame(sample = c('S1','S2'), x = c(1, NA), stringsAsFactors = FALSE)
+      }
+  ''')
 
-    def err = rFunction([
-        function: 'boom_fn',
-        _on_error: 'return',
-        _executable: 'Rscript',
-        sample: 'S2'
-    ], '''
-        boom_fn <- function(sample) {
-          stop('boom in channel flow')
-        }
-    ''')
-
-    Channel.of(ok, err)
-      .map { e -> [status: e.control.status ?: 'ok', payload: e.decoded_data, error: e.control.error_message] }
-      .view { row -> "status=${row.status} payload=${row.payload} error=${row.error}" }
+  ch.map { row -> [sample: row.sample, x2: coalesce(row.x, 0) * 2] }
+    .view { row -> "ROW ${row.sample} x2=${row.x2}" }
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835fbf00e9c.nf` [kickass_mandelbrot] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb917eb6b0ec.nf` [cheesy_plateau] DSL2 - revision: c2d18268f6
 #> 
-#> status=ok payload=[sample:S1, status:ok] error=null
-#> status=error payload=null error=boom in channel flow
+#> ROW S1 x2=2.0
+#> ROW S2 x2=0
 ```
 
-## Error-handling modes
+### Table-mode strictness
 
-- Default: throw on `status=error`
-- Per-call override: `_on_error: 'return'` to return structured error
-  envelope instead of throwing
-- Config default: `nfR.on_error = 'throw'|'return'`
+Table mode (`_payload_kind: 'table'` or `rTable`) is fail-fast:
 
-## Table payload mode contract
+- accepted shapes: list-of-records or map-of-equal-length scalar-columns
+- invalid shape raises `CodecException`
 
-When `_payload_kind: 'table'` is used (or via `rTable(...)`), the plugin
-expects/returns table-shaped data and normalizes it to records at the
-API boundary.
+## Runtime selection
 
-Contract:
+Runtime selectors:
 
-- Accepted result shapes for table mode:
-  - list-of-records (`List<Map>`)
-  - map-of-columns (`Map<String, List>`, equal-length scalar columns)
-- Returned shape to workflow code:
-  - always list-of-records (channel-friendly)
-- Notes:
-  - scalar-column constraint applies to map-of-columns conversion
-  - numeric values may appear as doubles on return due to R numeric
-    semantics
-
-Strictness behavior:
-
-- invalid table-mode shapes fail fast with a `CodecException`
-- malformed value-graph payloads fail validation before decode
-- no best-effort fallback is applied for ambiguous table payloads
-
-Common invalid-shape examples that now fail by design:
-
-- map-of-columns with unequal lengths
-- map-of-columns with non-scalar column elements (nested list/map cells)
-- malformed graph rows (duplicate node ids, missing parents, invalid
-  key/index usage)
-
-This strict behavior is intentional to prevent hidden data bugs.
-
-Fail-fast (`_on_error: 'throw'`) example:
-
-``` bash
-cat > /tmp/nfr_throw_example.nf <<'NF'
-include { rFunction } from 'plugin/nf-r-ipc'
-
-workflow {
-  rFunction([
-    function: 'boom_fn',
-    _on_error: 'throw',
-    _executable: 'Rscript',
-    sample: 'S1'
-  ], '''
-    boom_fn <- function(sample) {
-      stop('boom from throw mode')
-    }
-  ''')
-}
-NF
-
-set +e
-nextflow run /tmp/nfr_throw_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_throw_example.log 2>&1
-status=$?
-set -e
-echo "exit=$status"
-grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
-#> exit=1
-#> ERROR ~ rFunction failed [call_id=a04e4759-f955-4b8c-919f-6309c314004d] RRuntimeError: boom from throw mode
-```
-
-## R runtime selection
-
-The plugin now supports per-call runtime selectors similar to
-`nf-python`:
-
-- `_executable`: explicit `Rscript` path (or interpreter name)
-- `_conda_env`: Conda env name or prefix path
-- `_r_libs`: value for R libs search path wiring
+- `_executable`: direct interpreter path/name
+- `_conda_env`: conda env name or prefix path
+- `_r_libs`: sets `R_LIBS`
 
 `_executable` and `_conda_env` are mutually exclusive.
-
-Mutual exclusion guard example:
 
 ``` bash
 cat > /tmp/nfr_runtime_guard_example.nf <<'NF'
@@ -493,7 +328,7 @@ workflow {
 NF
 
 set +e
-nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_runtime_guard_example.log 2>&1
+nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.2.0 >/tmp/nfr_runtime_guard_example.log 2>&1
 status=$?
 set -e
 echo "exit=$status"
@@ -502,152 +337,18 @@ grep -E "cannot be used together" /tmp/nfr_runtime_guard_example.log || true
 #> ERROR ~ The '_executable' and '_conda_env' options cannot be used together
 ```
 
-`_r_libs` pass-through example:
+Conda executable resolution order:
 
-``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
+- `nfR.conda_executable`
+- `NFR_CONDA_EXE`
+- `conda` on `PATH`
 
-workflow {
-    def out = rFunction([
-        function: 'show_libs',
-        _executable: 'Rscript',
-        _r_libs: '/tmp/nfr-r-libs'
-    ], '''
-        show_libs <- function() {
-          list(r_libs = Sys.getenv('R_LIBS'))
-        }
-    ''')
-
-    println "r_libs=${out.decoded_data.r_libs}"
-}
-#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
-#> 
-#>  N E X T F L O W   ~  version 25.10.2
-#> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835fe3c9943.nf` [friendly_waddington] DSL2 - revision: ef8e2aac66
-#> 
-#> r_libs=/tmp/nfr-r-libs
-```
-
-Type mapping notes (current):
-
-- **Scalars and containers**
-  - Groovy scalar numbers map to encoded `int64`/`float64` values
-  - Groovy lists/maps map to R lists / named lists
-  - Groovy primitive arrays are encoded as list values
-  - R atomic vectors (`c(...)`) are encoded as list values on return
-  - list-of-records arguments are materialized as `data.frame` when
-    passed to R functions
-  - R `data.frame` results are normalized back to list-of-records on
-    return
-  - recursive data-frame-like maps (named equal-length list columns) are
-    tagged as `data_frame` in the value graph
-- **`int64` treatment in R**
-  - R has no native `int64` scalar type in base runtime
-  - launcher responses map `int64` wire values to R `double` semantics
-- **Missing values (`NA`) vs `NULL`**
-  - R `NULL` maps to wire `null`
-  - typed R missing values map to typed NA tags in the value graph:
-    - `NA` logical -\> `na_logical`
-    - `NA_integer_` -\> `na_integer`
-    - `NA_real_` -\> `na_double`
-    - `NA_character_` -\> `na_character`
-  - these tags are preserved across round-trip and remain distinct from
-    `null`
-
-Example (`NULL` + typed `NA_*` in one payload):
-
-``` nextflow
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; assertNotMissing } from 'plugin/nf-r-ipc'
-
-workflow {
-    def out = rFunction([
-        function: 'emit_missing',
-        _on_error: 'return',
-        _executable: 'Rscript'
-    ], '''
-        emit_missing <- function() {
-          list(
-            null_value = NULL,
-            na_logical = NA,
-            na_integer = NA_integer_,
-            na_double = NA_real_,
-            na_character = NA_character_,
-            nested = list(NA_real_, NULL, NA_character_)
-          )
-        }
-    ''')
-
-    println "status=${out.control.status}"
-    assert isNULL(out.decoded_data.null_value)
-    assert isNA(out.decoded_data.na_logical)
-    assert isNA(out.decoded_data.na_integer)
-    assert isNA(out.decoded_data.na_double)
-    assert isNA(out.decoded_data.na_character)
-    assert isNALogical(out.decoded_data.na_logical)
-    assert isNAInteger(out.decoded_data.na_integer)
-    assert isNADouble(out.decoded_data.na_double)
-    assert isNACharacter(out.decoded_data.na_character)
-    assert isNADouble(out.decoded_data.nested[0])
-    assert isNULL(out.decoded_data.nested[1])
-    assert isNACharacter(out.decoded_data.nested[2])
-    assert naType(out.decoded_data.na_double) == 'double'
-    assert isMissing(out.decoded_data.null_value)
-    assert isMissing(out.decoded_data.na_character)
-    assert !isMissing('ok')
-
-    assert coalesce(out.decoded_data.null_value, 'fallback-null') == 'fallback-null'
-    assert coalesce(out.decoded_data.na_integer, 99) == 99
-    assert coalesce('present', 'fallback') == 'present'
-
-    assert assertNotMissing('S1', 'sample_id') == 'S1'
-    println "decoded=${out.decoded_data}"
-}
-#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
-#> 
-#>  N E X T F L O W   ~  version 25.10.2
-#> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f69bda9cf.nf` [high_aryabhata] DSL2 - revision: 180147dfe3
-#> 
-#> status=ok
-#> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
-```
-
-Expected shape highlights:
-
-- `null_value` remains `null`
-- typed NA values decode as plugin marker enums (not `null`)
-- nested mixtures of `NA_*` and `NULL` remain distinguishable
-- helper checks:
-  `isNULL/isNA/isNALogical/isNAInteger/isNADouble/isNACharacter`
-- helper utilities: `naType/isMissing/coalesce/assertNotMissing`
-
-Resolution order is call option, then config, then default:
-
-- `nfR.executable` (default `Rscript`)
-- `nfR.conda_env`
-- `nfR.r_libs`
-
-When `_conda_env` is set:
-
-- env spec is resolved via Nextflow `CondaCache` (same style used in
-  `nf-python`)
-- plugin resolves concrete `Rscript` path with:
-  - `conda run -p <resolved_env_path> which Rscript`
-  - then executes that resolved interpreter directly
-
-Conda executable resolution uses:
-
-- `nfR.conda_executable` when configured
-- else `NFR_CONDA_EXE`
-- else `conda` from `PATH`
-
-`NFR_CONDA_EXE` override illustration:
+`NFR_CONDA_EXE` override demo:
 
 ``` bash
 if [ -x /root/miniconda3/bin/conda ]; then
   export NFR_CONDA_EXE=/root/miniconda3/bin/conda
-  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.1.0 -c validation/nextflow.config
+  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.2.0 -c validation/nextflow.config
 else
   echo "Conda binary not found at /root/miniconda3/bin/conda; skipping override demo"
 fi
@@ -655,7 +356,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [clever_euclid] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [small_swirles] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -663,36 +364,67 @@ fi
 #> ERR status=error
 ```
 
-Returned error envelopes include diagnostics fields (`error_class`,
-`error_message`) and launcher output text:
+## End-to-end example
+
+This one captures nested structures, typed missing values, table output,
+and channel transformation.
 
 ``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
+include { rFunction; rTable; channelFromR; isMissing; isNADouble; coalesce } from 'plugin/nf-r-ipc'
 
 workflow {
-    def err = rFunction([
-        function: 'boom_fn',
-        _on_error: 'return',
-        _executable: 'Rscript'
-    ], '''
-        boom_fn <- function() {
-          stop('boom for diagnostics')
-        }
-    ''')
+  def env = rFunction([
+      function: 'analyze',
+      _on_error: 'return',
+      _executable: 'Rscript',
+      params_map: [batch: 'B1', flag: true],
+      rows: [[sample: 'S1', x: 1], [sample: 'S2', x: 2]]
+  ], '''
+      analyze <- function(params_map, rows) {
+        rows$score <- c(10, NA_real_)
+        list(meta = params_map, rows = rows, notes = list(NULL, NA_character_))
+      }
+  ''')
 
-    println "status=${err.control.status}"
-    println "error_class=${err.control.error_class}"
-    println "error_message=${err.control.error_message}"
-    println "launcher_output=${err.launcher_output}"
+  assert env.control.status == 'ok'
+  assert env.decoded_data.meta.batch == 'B1'
+  assert isNADouble(env.decoded_data.rows[1].score)
+  assert isMissing(env.decoded_data.notes[0])
+
+  def rows = rTable([
+      function: 'make_rows',
+      _executable: 'Rscript'
+  ], '''
+      make_rows <- function() {
+        data.frame(sample = c('S1','S2'), x = c(1, NA), stringsAsFactors = FALSE)
+      }
+  ''')
+
+  Channel
+    .fromList(rows)
+    .map { row -> [sample: row.sample, x2: coalesce(row.x, 0) * 2] }
+    .view { row -> "TABLE ${row.sample} x2=${row.x2}" }
+
+  ch = channelFromR([
+      function: 'make_rows2',
+      _executable: 'Rscript'
+  ], '''
+      make_rows2 <- function() {
+        data.frame(sample = c('A','B'), v = c(3, 4), stringsAsFactors = FALSE)
+      }
+  ''')
+
+  ch.map { row -> [sample: row.sample, v3: row.v * 3] }
+    .view { row -> "CHAN ${row.sample} v3=${row.v3}" }
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f19b7f74f.nf` [distracted_kalman] DSL2 - revision: dcf9e5c2b8
+#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb911e1e0535.nf` [nasty_shockley] DSL2 - revision: 2e081cf29f
 #> 
-#> status=error
-#> error_class=RRuntimeError
-#> error_message=boom for diagnostics
-#> launcher_output=
+#> TABLE S1 x2=2.0
+#> CHAN A v3=9.0
+#> TABLE S2 x2=0
+#> CHAN B v3=12.0
 ```

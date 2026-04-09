@@ -4,6 +4,8 @@ All notable changes to `nf-r-ipc` are documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Added
 - Channel-focused helper APIs:
   - `rRecords(...)` for channel-friendly list-of-record outputs
@@ -29,6 +31,10 @@ All notable changes to `nf-r-ipc` are documented in this file.
 - CI workflows now include README render checks and conda integration coverage.
 - Value-graph decode now enforces strict structural validation (single root, parent existence, key/index constraints, scalar value-column rules).
 - Table mode now fails fast on invalid shapes instead of best-effort fallback.
+- Added missing-value helper predicates/utilities in plugin API:
+  - `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
+  - `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+- Removed SLF4J provider mismatch runtime warnings by excluding transitive `slf4j-api` from Arrow dependencies.
 
 ## [0.1.0]
 
