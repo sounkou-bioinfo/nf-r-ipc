@@ -12,9 +12,9 @@ class RExtensionErrorIntegrationTest extends Specification {
 
     static class TestRExtension extends RExtension {
         @Override
-        protected int runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
+        protected LaunchResult runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
             java.nio.file.Files.copy(requestIpc, responseIpc)
-            return 0
+            return new LaunchResult(0, 'launcher-test-output-line-1\nlauncher-test-output-line-2')
         }
     }
 
@@ -32,6 +32,7 @@ class RExtensionErrorIntegrationTest extends Specification {
         e.message.contains('rFunction failed')
         e.message.contains('RRuntimeError')
         e.message.contains('simulated failure')
+        e.message.contains('Launcher output (tail)')
     }
 
     def 'should return structured error payload when _on_error return is set'() {

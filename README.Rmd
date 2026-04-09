@@ -198,6 +198,8 @@ workflow {
 
 `rRecords(...)` is a channel-friendly helper that guarantees list-of-records output. You can pass this result directly to `Channel.fromList(...)`.
 
+`rTable(...)` is an alias for `rRecords(...)` with `_payload_kind: 'table'` set by default.
+
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
 include { rRecords } from 'plugin/nf-r-ipc'
 

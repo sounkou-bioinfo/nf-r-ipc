@@ -25,10 +25,18 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test UP-TO-DATE
+#> > Task :test
 #> 
-#> BUILD SUCCESSFUL in 983ms
-#> 8 actionable tasks: 8 up-to-date
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 1s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ## Install locally
@@ -46,10 +54,22 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
-#> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 1s
-#> 6 actionable tasks: 6 up-to-date
+#> > Task :installPlugin
+#> Plugin nf-r-ipc installed successfully!
+#> Installation location: /root/.nextflow/plugins
+#> Installation location determined by - Default location (~/.nextflow/plugins)
+#> 
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 512ms
+#> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
 ## Example Nextflow pipeline
@@ -96,7 +116,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e1674ba83a2.nf` [hopeful_becquerel] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f02701ce8d9.nf` [peaceful_curran] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -145,7 +165,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e1633a6bb60.nf` [stoic_heyrovsky] DSL2 - revision: 2774f29512
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f021d42ba29.nf` [loving_mcnulty] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -191,7 +211,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e16667b66a9.nf` [spontaneous_sinoussi] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f023d95a8d5.nf` [nasty_kay] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -236,7 +256,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e1666cf65f8.nf` [dreamy_volta] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f021531b768.nf` [high_venter] DSL2 - revision: beccbcb99f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -252,6 +272,9 @@ workflow {
 `rRecords(...)` is a channel-friendly helper that guarantees
 list-of-records output. You can pass this result directly to
 `Channel.fromList(...)`.
+
+`rTable(...)` is an alias for `rRecords(...)` with
+`_payload_kind: 'table'` set by default.
 
 ``` nextflow
 include { rRecords } from 'plugin/nf-r-ipc'
@@ -278,7 +301,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e16444c740a.nf` [extravagant_heyrovsky] DSL2 - revision: 277cebeada
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f0263ca7b29.nf` [dreamy_noyce] DSL2 - revision: 277cebeada
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -328,7 +351,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpqJ8DCd/readme-nextflow-78e1656d72ef9.nf` [friendly_gautier] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/Rtmp8KFGJO/readme-nextflow-101f024474c7d2.nf` [distraught_pesquet] DSL2 - revision: cf3d01a459
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype

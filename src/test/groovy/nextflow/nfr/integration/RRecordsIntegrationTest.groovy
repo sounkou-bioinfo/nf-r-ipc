@@ -7,9 +7,9 @@ class RRecordsIntegrationTest extends Specification {
 
     static class TestRExtension extends RExtension {
         @Override
-        protected int runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
+        protected LaunchResult runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
             java.nio.file.Files.copy(requestIpc, responseIpc)
-            return 0
+            return new LaunchResult(0, 'ok')
         }
     }
 

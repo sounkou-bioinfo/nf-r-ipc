@@ -14,9 +14,9 @@ class RExtensionTest extends Specification {
         }
 
         @Override
-        protected int runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
+        protected LaunchResult runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
             java.nio.file.Files.copy(requestIpc, responseIpc)
-            return 0
+            return new LaunchResult(0, 'ok')
         }
     }
 
@@ -108,5 +108,21 @@ class RExtensionTest extends Specification {
         then:
         def e = thrown(IllegalArgumentException)
         e.message.contains("cannot be used together")
+    }
+
+    def 'should accept table payload kind and normalize to records'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        def result = ext.rFunction([
+            script: 'x.R',
+            _payload_kind: 'table',
+            cols: [sample: ['S1', 'S2'], x: [1, 2]]
+        ], '')
+
+        then:
+        result.control.payload_kind == 'table'
+        result.decoded_data == [[sample: 'S1', x: 1L], [sample: 'S2', x: 2L]]
     }
 }

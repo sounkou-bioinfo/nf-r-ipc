@@ -17,6 +17,17 @@ import nextflow.plugin.extension.PluginExtensionPoint
 @CompileStatic
 class RExtension extends PluginExtensionPoint {
 
+    @CompileStatic
+    static class LaunchResult {
+        final int exitCode
+        final String output
+
+        LaunchResult(int exitCode, String output) {
+            this.exitCode = exitCode
+            this.output = output
+        }
+    }
+
     private Session session
     private IpcCodec codec
 
@@ -42,9 +53,10 @@ class RExtension extends PluginExtensionPoint {
     Object rFunction(Map args, String code = '') {
         validateCall(args, code)
 
-        List<String> excludedKeys = ['function', 'script', '_executable', '_conda_env', '_r_libs', '_on_error']
+        List<String> excludedKeys = ['function', 'script', '_executable', '_conda_env', '_r_libs', '_on_error', '_payload_kind']
         Map forwardedArgs = args.findAll { k, v -> !(k in excludedKeys) }
         Map<String,Object> launch = resolveLaunch(args)
+        String payloadKind = resolvePayloadKind(args)
 
         String callId = UUID.randomUUID().toString()
         Path scratch = Files.createTempDirectory('nfr-')
@@ -59,7 +71,7 @@ class RExtension extends PluginExtensionPoint {
             function: functionName,
             script_mode: args.containsKey('script') ? 'path' : 'inline',
             script_ref: (args.get('script') ?: '<inline>'),
-            payload_kind: 'value_graph',
+            payload_kind: payloadKind,
             code_present: !code.isEmpty(),
             runtime_executable: launch.executable,
             runtime_conda_env: launch.conda_env,
@@ -69,12 +81,16 @@ class RExtension extends PluginExtensionPoint {
         IpcCodec selectedCodec = getCodec()
         selectedCodec.writeRequest(requestIpc, control, forwardedArgs)
 
-        int exitCode = runRscript(launch, scratch, requestIpc, responseIpc, code)
+        LaunchResult run = runRscript(launch, scratch, requestIpc, responseIpc, code)
         if (!Files.exists(responseIpc)) {
-            throw new CodecException("R launcher did not produce response IPC (exit=${exitCode}): ${responseIpc}")
+            throw new CodecException("R launcher did not produce response IPC (exit=${run.exitCode}): ${responseIpc}\n${tail(run.output)}")
         }
 
         DecodedResponse decoded = selectedCodec.readResponse(responseIpc)
+        Object decodedData = decoded.data
+        if ('table' == payloadKind && !isError(decoded.control)) {
+            decodedData = normalizeTableData(decodedData)
+        }
         String onError = resolveOnError(args)
         if (isError(decoded.control)) {
             if (onError == 'return') {
@@ -84,10 +100,11 @@ class RExtension extends PluginExtensionPoint {
                     runtime: launch,
                     forwarded_args: forwardedArgs,
                     control: decoded.control,
-                    decoded_data: decoded.data
+                    decoded_data: decodedData,
+                    launcher_output: run.output
                 ]
             }
-            ensureSuccess(callId, decoded.control)
+            ensureSuccess(callId, decoded.control, run.output)
         }
 
         return [
@@ -96,8 +113,16 @@ class RExtension extends PluginExtensionPoint {
             runtime: launch,
             forwarded_args: forwardedArgs,
             control: decoded.control,
-            decoded_data: decoded.data
+            decoded_data: decodedData,
+            launcher_output: run.output
         ]
+    }
+
+    @Function
+    List<Map<String,Object>> rTable(Map args, String code = '') {
+        Map<String,Object> call = new LinkedHashMap<>(args)
+        call.put('_payload_kind', 'table')
+        return rRecords(call, code)
     }
 
     @Function
@@ -216,6 +241,16 @@ class RExtension extends PluginExtensionPoint {
         return value
     }
 
+    private String resolvePayloadKind(Map args) {
+        String callValue = args?.get('_payload_kind') == null ? null : String.valueOf(args.get('_payload_kind'))
+        String cfgValue = session?.config?.navigate('nfR.payload_kind') as String
+        String value = (callValue ?: cfgValue ?: 'value_graph').trim().toLowerCase()
+        if (!(value in ['value_graph', 'table'])) {
+            throw new IllegalArgumentException("Invalid _payload_kind value: ${value}. Expected 'value_graph' or 'table'")
+        }
+        return value
+    }
+
     private static void validateCall(Map args, String code) {
         if (code && args.containsKey('script')) {
             throw new IllegalArgumentException('Cannot use both code and script options together')
@@ -230,7 +265,7 @@ class RExtension extends PluginExtensionPoint {
         return status == 'error'
     }
 
-    protected int runRscript(Map<String,Object> launch, Path scratch, Path requestIpc, Path responseIpc, String code) {
+    protected LaunchResult runRscript(Map<String,Object> launch, Path scratch, Path requestIpc, Path responseIpc, String code) {
         Path launcherScript = materializeLauncherScript(scratch)
         List<String> command = new ArrayList<>((List<String>)launch.command)
         command.add(launcherScript.toString())
@@ -254,7 +289,7 @@ class RExtension extends PluginExtensionPoint {
         if (exit != 0 && !Files.exists(responseIpc)) {
             throw new CodecException("R launcher failed (exit=${exit})\n${output}")
         }
-        return exit
+        return new LaunchResult(exit, output)
     }
 
     protected Path materializeLauncherScript(Path scratch) {
@@ -270,7 +305,7 @@ class RExtension extends PluginExtensionPoint {
         return target
     }
 
-    private static void ensureSuccess(String callId, Map<String,Object> control) {
+    private static void ensureSuccess(String callId, Map<String,Object> control, String launcherOutput) {
         String status = control?.get('status') == null ? null : String.valueOf(control.get('status'))
         if (status == null || status == 'ok') {
             return
@@ -281,7 +316,16 @@ class RExtension extends PluginExtensionPoint {
 
         String errorClass = control.get('error_class') == null ? 'RError' : String.valueOf(control.get('error_class'))
         String errorMessage = control.get('error_message') == null ? 'unknown error' : String.valueOf(control.get('error_message'))
-        throw new CodecException("rFunction failed [call_id=${callId}] ${errorClass}: ${errorMessage}")
+        throw new CodecException("rFunction failed [call_id=${callId}] ${errorClass}: ${errorMessage}\nLauncher output (tail): ${tail(launcherOutput)}")
+    }
+
+    private static String tail(String text) {
+        if (text == null || text.isEmpty()) {
+            return ''
+        }
+        List<String> lines = text.readLines()
+        int n = Math.min(10, lines.size())
+        return lines.subList(lines.size() - n, lines.size()).join(' | ')
     }
 
     private static boolean isRecordList(List rows) {
@@ -353,5 +397,24 @@ class RExtension extends PluginExtensionPoint {
             out.add(row)
         }
         return out
+    }
+
+    private static Object normalizeTableData(Object data) {
+        if (data instanceof List && isRecordList((List)data)) {
+            return data
+        }
+        if (data instanceof Map && isColumnMap((Map)data)) {
+            return columnMapToRecords((Map<String,Object>)data)
+        }
+        if (data instanceof Map && ((Map)data).size() == 1) {
+            Object only = ((Map)data).values().first()
+            if (only instanceof List && isRecordList((List)only)) {
+                return only
+            }
+            if (only instanceof Map && isColumnMap((Map)only)) {
+                return columnMapToRecords((Map<String,Object>)only)
+            }
+        }
+        return data
     }
 }

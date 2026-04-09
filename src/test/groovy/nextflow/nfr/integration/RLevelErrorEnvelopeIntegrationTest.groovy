@@ -13,9 +13,9 @@ class RLevelErrorEnvelopeIntegrationTest extends Specification {
 
     static class TestRExtension extends RExtension {
         @Override
-        protected int runRscript(Map<String, Object> launch, Path scratch, Path requestIpc, Path responseIpc, String code) {
+        protected LaunchResult runRscript(Map<String, Object> launch, Path scratch, Path requestIpc, Path responseIpc, String code) {
             java.nio.file.Files.copy(requestIpc, responseIpc)
-            return 0
+            return new LaunchResult(0, 'launcher-error-envelope-output')
         }
     }
 
