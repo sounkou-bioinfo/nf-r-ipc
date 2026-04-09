@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.UUID
+import nextflow.Channel
 import nextflow.conda.CondaCache
 import nextflow.Session
 import nextflow.nfr.codec.CodecFactory
@@ -123,6 +124,12 @@ class RExtension extends PluginExtensionPoint {
         Map<String,Object> call = new LinkedHashMap<>(args)
         call.put('_payload_kind', 'table')
         return rRecords(call, code)
+    }
+
+    @Function
+    Object channelFromR(Map args, String code = '') {
+        List<Map<String,Object>> rows = rRecords(args, code)
+        return Channel.fromList(rows)
     }
 
     @Function

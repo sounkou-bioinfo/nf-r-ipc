@@ -58,7 +58,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 409ms
+#> BUILD SUCCESSFUL in 445ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -106,7 +106,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec3dba110f.nf` [big_curry] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d7fff77ab.nf` [berserk_curry] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -161,7 +161,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec34540f541.nf` [mad_hodgkin] DSL2 - revision: 352621cd7e
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d632b5080.nf` [festering_golick] DSL2 - revision: 352621cd7e
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -213,7 +213,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec36169718f.nf` [loving_gutenberg] DSL2 - revision: 558ef7cab4
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314da6f66b2.nf` [hopeful_spence] DSL2 - revision: 558ef7cab4
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -258,7 +258,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec348990175.nf` [fabulous_brown] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d490d933e.nf` [nasty_angela] DSL2 - revision: beccbcb99f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -280,6 +280,44 @@ channel-native entry points (for example, SQL plugins exposing
 `channel.from...` factories): provide a plugin API that yields
 channel-friendly values and let the workflow compose standard channel
 operators.
+
+If you prefer a direct channel factory style, `channelFromR(...)`
+returns a channel directly:
+
+``` nextflow
+include { channelFromR } from 'plugin/nf-r-ipc'
+
+workflow {
+    ch = channelFromR([
+        function: 'make_rows',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    ch.map { row -> [sample: row.sample, x3: row.x * 3] }
+      .view { row -> "ROW ${row.sample} x3=${row.x3}" }
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d7b3c0eb8.nf` [lonely_archimedes] DSL2 - revision: a76e8925f2
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> ROW S1 x3=3.0
+#> ROW S2 x3=6.0
+```
 
 `rTable(...)` is an alias for `rRecords(...)` with
 `_payload_kind: 'table'` set by default.
@@ -307,7 +345,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec3390423e.nf` [golden_venter] DSL2 - revision: 588eb96d14
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d252d46fc.nf` [ecstatic_banach] DSL2 - revision: 588eb96d14
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -344,7 +382,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec342591b96.nf` [reverent_brahmagupta] DSL2 - revision: 2d2423bfda
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d582cebff.nf` [confident_planck] DSL2 - revision: 2d2423bfda
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -379,7 +417,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec3396aa260.nf` [lonely_heyrovsky] DSL2 - revision: 277cebeada
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d5398aa10.nf` [adoring_engelbart] DSL2 - revision: 277cebeada
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -429,7 +467,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec3405446b1.nf` [nasty_yonath] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d4441c8e6.nf` [curious_caravaggio] DSL2 - revision: cf3d01a459
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -492,7 +530,7 @@ set -e
 echo "exit=$status"
 grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
 #> exit=1
-#> ERROR ~ rFunction failed [call_id=7f8cc124-4da8-4de0-9e3b-90f79ac26e82] RRuntimeError: boom from throw mode
+#> ERROR ~ rFunction failed [call_id=4aeee6d3-6b26-491c-83cc-9151c0c31b79] RRuntimeError: boom from throw mode
 ```
 
 ## R runtime selection
@@ -555,7 +593,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec35aea205b.nf` [astonishing_snyder] DSL2 - revision: ef8e2aac66
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d1bed8fd6.nf` [maniac_banach] DSL2 - revision: ef8e2aac66
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -624,7 +662,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [marvelous_volta] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [lethal_wozniak] DSL2 - revision: fbd21a0aa8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -663,7 +701,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmptJ9SQq/readme-nextflow-10cec34989d018.nf` [mad_meitner] DSL2 - revision: dcf9e5c2b8
+#> Launching `/tmp/RtmpOvNtKY/readme-nextflow-11314d3bbd7125.nf` [suspicious_swirles] DSL2 - revision: dcf9e5c2b8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype

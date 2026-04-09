@@ -8,6 +8,7 @@ All notable changes to `nf-r-ipc` are documented in this file.
 - Channel-focused helper APIs:
   - `rRecords(...)` for channel-friendly list-of-record outputs
   - `rTable(...)` as a convenience alias for table payload mode
+  - `channelFromR(...)` for direct channel factory style record emission
 - Payload mode selector `_payload_kind` with supported values:
   - `value_graph` (default)
   - `table`
