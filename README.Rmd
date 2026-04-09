@@ -128,6 +128,21 @@ Use helper functions from the plugin API:
 - Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
 - Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`, `coalesceNA`, `assertNotMissing`, `renderValue`
 
+Helper cheat sheet:
+
+| Helper | Purpose | Example |
+|---|---|---|
+| `isNULL(x)` | Test R `NULL` | `isNULL(row.value)` |
+| `isNA(x)` | Test any typed `NA` marker | `isNA(row.value)` |
+| `isNADouble(x)` | Test `NA_real_` specifically | `isNADouble(row.score)` |
+| `isMissing(x)` | Test `NULL` or typed `NA` | `isMissing(row.value)` |
+| `naType(x)` | Get typed NA kind or `null` | `naType(row.value) == 'integer'` |
+| `coalesce(x, y)` | Fallback for `NULL` and typed `NA` | `coalesce(row.x, 0)` |
+| `coalesceNULL(x, y)` | Fallback only for `NULL` | `coalesceNULL(row.x, 0)` |
+| `coalesceNA(x, y)` | Fallback only for typed `NA` | `coalesceNA(row.x, 0)` |
+| `assertNotMissing(x, label)` | Throw on missing values | `assertNotMissing(row.sample, 'sample')` |
+| `renderValue(x)` | Stable display form for logs | `renderValue(row.score)` |
+
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
 include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
 
@@ -212,6 +227,17 @@ workflow {
   println "types=${out.decoded_data}"
 }
 ```
+
+### Current limitations
+
+Current normalization intentionally keeps the contract narrow:
+
+- `factor` values are returned as strings (levels), not factor objects.
+- `Date`/`POSIX*` are returned as strings, not Java date-time objects.
+- Deep list-columns and arbitrary R object graphs are not a supported wire shape.
+- No object identity/class round-trip guarantees beyond documented normalized forms.
+
+If you need richer semantics, convert explicitly in R before returning.
 
 ## Error handling modes
 

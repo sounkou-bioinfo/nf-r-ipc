@@ -31,7 +31,7 @@ side).
 #> > Task :testClasses UP-TO-DATE
 #> > Task :test UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 425ms
+#> BUILD SUCCESSFUL in 427ms
 #> 8 actionable tasks: 8 up-to-date
 ```
 
@@ -48,7 +48,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 426ms
+#> BUILD SUCCESSFUL in 443ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -94,7 +94,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e493fccddf1.nf` [desperate_visvesvaraya] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-13705773032485.nf` [mighty_lattes] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -129,6 +129,21 @@ Use helper functions from the plugin API:
   `isNADouble`, `isNACharacter`
 - Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`,
   `coalesceNA`, `assertNotMissing`, `renderValue`
+
+Helper cheat sheet:
+
+| Helper                       | Purpose                            | Example                                  |
+|------------------------------|------------------------------------|------------------------------------------|
+| `isNULL(x)`                  | Test R `NULL`                      | `isNULL(row.value)`                      |
+| `isNA(x)`                    | Test any typed `NA` marker         | `isNA(row.value)`                        |
+| `isNADouble(x)`              | Test `NA_real_` specifically       | `isNADouble(row.score)`                  |
+| `isMissing(x)`               | Test `NULL` or typed `NA`          | `isMissing(row.value)`                   |
+| `naType(x)`                  | Get typed NA kind or `null`        | `naType(row.value) == 'integer'`         |
+| `coalesce(x, y)`             | Fallback for `NULL` and typed `NA` | `coalesce(row.x, 0)`                     |
+| `coalesceNULL(x, y)`         | Fallback only for `NULL`           | `coalesceNULL(row.x, 0)`                 |
+| `coalesceNA(x, y)`           | Fallback only for typed `NA`       | `coalesceNA(row.x, 0)`                   |
+| `assertNotMissing(x, label)` | Throw on missing values            | `assertNotMissing(row.sample, 'sample')` |
+| `renderValue(x)`             | Stable display form for logs       | `renderValue(row.score)`                 |
 
 ``` nextflow
 include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
@@ -191,7 +206,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49560bfa4e.nf` [nasty_ritchie] DSL2 - revision: 4e431e9b66
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057cd03ceb.nf` [gigantic_franklin] DSL2 - revision: 4e431e9b66
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -224,10 +239,23 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49131441ec.nf` [jovial_euclid] DSL2 - revision: d27ecdb908
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370571f3192bf.nf` [gigantic_babbage] DSL2 - revision: d27ecdb908
 #> 
 #> types=[fac:A, date:2024-01-02, ts:2024-01-02 03:04:05 UTC]
 ```
+
+### Current limitations
+
+Current normalization intentionally keeps the contract narrow:
+
+- `factor` values are returned as strings (levels), not factor objects.
+- `Date`/`POSIX*` are returned as strings, not Java date-time objects.
+- Deep list-columns and arbitrary R object graphs are not a supported
+  wire shape.
+- No object identity/class round-trip guarantees beyond documented
+  normalized forms.
+
+If you need richer semantics, convert explicitly in R before returning.
 
 ## Error handling modes
 
@@ -256,7 +284,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e491e494ad0.nf` [angry_brattain] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057349987e3.nf` [modest_jepsen] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -286,7 +314,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e496d812172.nf` [goofy_yalow] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370576ed5d056.nf` [modest_jones] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -313,7 +341,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49498e3110.nf` [kickass_plateau] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-13705719700f1a.nf` [trusting_visvesvaraya] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -380,7 +408,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [nostalgic_brattain] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [special_wegener] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -430,7 +458,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e492a33a8b6.nf` [crazy_euler] DSL2 - revision: 1b43bf73be
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057775b21c0.nf` [thirsty_babbage] DSL2 - revision: 1b43bf73be
 #> 
 #> rows=32
 #> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
@@ -493,7 +521,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e496db36ff8.nf` [nostalgic_poisson] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370571866be84.nf` [lonely_albattani] DSL2 - revision: 2e081cf29f
 #> 
 #> CHAN A v3=9.0
 #> TABLE S1 x2=2.0
