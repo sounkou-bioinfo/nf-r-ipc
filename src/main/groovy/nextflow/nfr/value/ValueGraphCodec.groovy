@@ -4,7 +4,6 @@ import groovy.transform.CompileStatic
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
-import java.util.HashMap
 import java.util.LinkedHashMap
 import java.util.List
 import java.util.Map
@@ -17,6 +16,7 @@ class ValueGraphCodec {
         List<ValueNode> nodes = new ArrayList<>()
         long[] nextId = [1L] as long[]
         appendNode(nodes, nextId, null, null, null, rootValue)
+        ValueGraphValidator.validate(nodes)
         return nodes
     }
 
@@ -25,12 +25,12 @@ class ValueGraphCodec {
             throw new IllegalArgumentException('Value graph cannot be empty')
         }
 
-        Map<Long, ValueNode> byId = new HashMap<>()
+        ValueGraphValidator.validate(nodes)
+
         Map<Long, List<ValueNode>> children = new HashMap<>()
         ValueNode root = null
 
         for (ValueNode node : nodes) {
-            byId.put(node.valueId, node)
             if (node.parentId == null) {
                 if (root != null) {
                     throw new IllegalArgumentException('Value graph has more than one root')

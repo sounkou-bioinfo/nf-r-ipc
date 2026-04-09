@@ -13,6 +13,7 @@ All notable changes to `nf-r-ipc` are documented in this file.
   - `value_graph` (default)
   - `table`
 - Recursive value-graph support for data-frame-like values through `data_frame` tag.
+- `CONTRACT.md` with strict protocol/type invariants for control and value-graph payloads.
 - Extended integration coverage for:
   - atomic vectors
   - typed NA handling
@@ -26,6 +27,8 @@ All notable changes to `nf-r-ipc` are documented in this file.
 ### Changed
 - Runtime diagnostics now include launcher output tail in thrown errors.
 - CI workflows now include README render checks and conda integration coverage.
+- Value-graph decode now enforces strict structural validation (single root, parent existence, key/index constraints, scalar value-column rules).
+- Table mode now fails fast on invalid shapes instead of best-effort fallback.
 
 ## [0.1.0]
 

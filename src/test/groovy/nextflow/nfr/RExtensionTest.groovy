@@ -1,6 +1,7 @@
 package nextflow.nfr
 
 import spock.lang.Specification
+import nextflow.nfr.codec.CodecException
 
 class RExtensionTest extends Specification {
 
@@ -124,5 +125,21 @@ class RExtensionTest extends Specification {
         then:
         result.control.payload_kind == 'table'
         result.decoded_data == [[sample: 'S1', x: 1L], [sample: 'S2', x: 2L]]
+    }
+
+    def 'should fail on invalid table payload shape'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        ext.rFunction([
+            script: 'x.R',
+            _payload_kind: 'table',
+            bad: [a: [1, 2], b: [1]]
+        ], '')
+
+        then:
+        def e = thrown(CodecException)
+        e.message.contains('Invalid table payload shape')
     }
 }

@@ -422,6 +422,6 @@ class RExtension extends PluginExtensionPoint {
                 return columnMapToRecords((Map<String,Object>)only)
             }
         }
-        return data
+        throw new CodecException("Invalid table payload shape. Expected list-of-records or map-of-columns, got: ${data == null ? 'null' : data.getClass().name}")
     }
 }

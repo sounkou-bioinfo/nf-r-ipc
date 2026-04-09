@@ -59,4 +59,19 @@ class ValueGraphCodecTest extends Specification {
         nodes.any { it.tag == ValueGraphTag.DATA_FRAME }
         output == input
     }
+
+    def 'should reject malformed graph on decode'() {
+        given:
+        def nodes = [
+            new ValueNode(1L, null, null, null, ValueGraphTag.MAP, null, null, null, null),
+            new ValueNode(2L, 1L, null, null, ValueGraphTag.INT64, null, 1L, null, null)
+        ]
+
+        when:
+        ValueGraphCodec.decode(nodes)
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message.contains('missing key')
+    }
 }
