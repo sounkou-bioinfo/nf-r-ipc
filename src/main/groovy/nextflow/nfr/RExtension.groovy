@@ -82,6 +82,40 @@ class RExtension extends PluginExtensionPoint {
     }
 
     @Function
+    String naType(Object value) {
+        if (value == NAValue.LOGICAL) return 'logical'
+        if (value == NAValue.INTEGER) return 'integer'
+        if (value == NAValue.DOUBLE) return 'double'
+        if (value == NAValue.CHARACTER) return 'character'
+        return null
+    }
+
+    @Function
+    boolean isMissing(Object value) {
+        return isNULL(value) || isNA(value)
+    }
+
+    @Function
+    Object coalesce(Object value, Object fallback) {
+        return isMissing(value) ? fallback : value
+    }
+
+    @Function
+    Object assertNotMissing(Object value) {
+        return assertNotMissing(value, 'value')
+    }
+
+    @Function
+    Object assertNotMissing(Object value, String label) {
+        if (!isMissing(value)) {
+            return value
+        }
+        String name = (label == null || label.trim().isEmpty()) ? 'value' : label
+        String type = isNULL(value) ? 'NULL' : "NA<${naType(value)}>"
+        throw new IllegalArgumentException("Missing value for ${name}: ${type}")
+    }
+
+    @Function
     Object rFunction(Map args, String code = '') {
         validateCall(args, code)
 

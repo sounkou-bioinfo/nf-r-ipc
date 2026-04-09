@@ -167,5 +167,42 @@ class RExtensionTest extends Specification {
         !ext.isNADouble(NAValue.CHARACTER)
         ext.isNACharacter(NAValue.CHARACTER)
         !ext.isNACharacter(NAValue.LOGICAL)
+
+        ext.naType(NAValue.LOGICAL) == 'logical'
+        ext.naType(NAValue.INTEGER) == 'integer'
+        ext.naType(NAValue.DOUBLE) == 'double'
+        ext.naType(NAValue.CHARACTER) == 'character'
+        ext.naType(null) == null
+        ext.naType(123) == null
+
+        ext.isMissing(null)
+        ext.isMissing(NAValue.DOUBLE)
+        !ext.isMissing('x')
+
+        ext.coalesce(null, 'fallback') == 'fallback'
+        ext.coalesce(NAValue.INTEGER, 7) == 7
+        ext.coalesce('ok', 'fallback') == 'ok'
+
+        ext.assertNotMissing('ok') == 'ok'
+        ext.assertNotMissing(1, 'x') == 1
+    }
+
+    def 'assertNotMissing should fail with clear message'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        ext.assertNotMissing(null, 'sample_id')
+
+        then:
+        def e1 = thrown(IllegalArgumentException)
+        e1.message == 'Missing value for sample_id: NULL'
+
+        when:
+        ext.assertNotMissing(NAValue.DOUBLE, 'score')
+
+        then:
+        def e2 = thrown(IllegalArgumentException)
+        e2.message == 'Missing value for score: NA<double>'
     }
 }

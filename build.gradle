@@ -7,10 +7,18 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.arrow:arrow-vector:19.0.0'
-    implementation 'org.apache.arrow:arrow-memory-core:19.0.0'
-    implementation 'org.apache.arrow:arrow-memory-netty:19.0.0'
-    implementation 'org.apache.arrow:arrow-format:19.0.0'
+    implementation('org.apache.arrow:arrow-vector:19.0.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+    implementation('org.apache.arrow:arrow-memory-core:19.0.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+    implementation('org.apache.arrow:arrow-memory-netty:19.0.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+    implementation('org.apache.arrow:arrow-format:19.0.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
 }
 
 tasks.withType(Test).configureEach {

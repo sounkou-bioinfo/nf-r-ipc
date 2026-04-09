@@ -18,17 +18,17 @@ The strict wire/type contract is defined in `CONTRACT.md`.
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
 #> > Task :compileJava NO-SOURCE
-#> > Task :compileGroovy
+#> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
-#> > Task :classes
+#> > Task :classes UP-TO-DATE
 #> > Task :extensionPoints UP-TO-DATE
-#> > Task :jar
-#> > Task :packagePlugin
-#> > Task :assemble
+#> > Task :jar UP-TO-DATE
+#> > Task :packagePlugin UP-TO-DATE
+#> > Task :assemble UP-TO-DATE
 #> > Task :compileTestJava NO-SOURCE
-#> > Task :compileTestGroovy
+#> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
-#> > Task :testClasses
+#> > Task :testClasses UP-TO-DATE
 #> > Task :test
 #> 
 #> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
@@ -39,8 +39,8 @@ The strict wire/type contract is defined in `CONTRACT.md`.
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 3s
-#> 8 actionable tasks: 5 executed, 3 up-to-date
+#> BUILD SUCCESSFUL in 1s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ## Install locally
@@ -72,7 +72,7 @@ make install
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 466ms
+#> BUILD SUCCESSFUL in 461ms
 #> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
@@ -120,13 +120,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d5337d944.nf` [dreamy_wiles] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f5c9d5bf4.nf` [sad_hilbert] DSL2 - revision: 3efd8eaaac
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[Rscript]
 #> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -182,13 +177,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d571003cd.nf` [zen_angela] DSL2 - revision: 352621cd7e
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f4a389fd2.nf` [clever_gilbert] DSL2 - revision: 352621cd7e
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
 #> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -234,13 +224,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d1f73e32e.nf` [grave_feynman] DSL2 - revision: 558ef7cab4
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f5dd18564.nf` [kickass_jepsen] DSL2 - revision: 558ef7cab4
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
 #> OK decoded=[sample:S1-external, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -279,13 +264,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d2bd80200.nf` [loving_shaw] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f352c772a.nf` [cranky_heisenberg] DSL2 - revision: beccbcb99f
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> status=ok
 #> decoded=[tbl:[[sample:S1, x:1.0, y:2.0, score:3.0], [sample:S2, x:3.0, y:4.0, score:7.0]], meta:[batch:B1]]
 ```
@@ -329,13 +309,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d451c527c.nf` [agitated_dalembert] DSL2 - revision: a76e8925f2
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f7ddf99d2.nf` [tender_bernard] DSL2 - revision: a76e8925f2
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> ROW S1 x3=3.0
 #> ROW S2 x3=6.0
 ```
@@ -366,13 +341,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d3ac316a8.nf` [lonely_poitras] DSL2 - revision: 588eb96d14
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f39aac7ef.nf` [maniac_ampere] DSL2 - revision: 588eb96d14
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
 
@@ -418,13 +388,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d3ba5cd43.nf` [clever_mirzakhani] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835fbf00e9c.nf` [kickass_mandelbrot] DSL2 - revision: cf3d01a459
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> status=ok payload=[sample:S1, status:ok] error=null
 #> status=error payload=null error=boom in channel flow
 ```
@@ -496,7 +461,7 @@ set -e
 echo "exit=$status"
 grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
 #> exit=1
-#> ERROR ~ rFunction failed [call_id=d7b2d883-7841-46a1-86af-c216f834e1fd] RRuntimeError: boom from throw mode
+#> ERROR ~ rFunction failed [call_id=a04e4759-f955-4b8c-919f-6309c314004d] RRuntimeError: boom from throw mode
 ```
 
 ## R runtime selection
@@ -559,13 +524,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d1dc60241.nf` [grave_cuvier] DSL2 - revision: ef8e2aac66
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835fe3c9943.nf` [friendly_waddington] DSL2 - revision: ef8e2aac66
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> r_libs=/tmp/nfr-r-libs
 ```
 
@@ -598,7 +558,7 @@ Type mapping notes (current):
 Example (`NULL` + typed `NA_*` in one payload):
 
 ``` nextflow
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; assertNotMissing } from 'plugin/nf-r-ipc'
 
 workflow {
     def out = rFunction([
@@ -631,19 +591,24 @@ workflow {
     assert isNADouble(out.decoded_data.nested[0])
     assert isNULL(out.decoded_data.nested[1])
     assert isNACharacter(out.decoded_data.nested[2])
+    assert naType(out.decoded_data.na_double) == 'double'
+    assert isMissing(out.decoded_data.null_value)
+    assert isMissing(out.decoded_data.na_character)
+    assert !isMissing('ok')
+
+    assert coalesce(out.decoded_data.null_value, 'fallback-null') == 'fallback-null'
+    assert coalesce(out.decoded_data.na_integer, 99) == 99
+    assert coalesce('present', 'fallback') == 'present'
+
+    assert assertNotMissing('S1', 'sample_id') == 'S1'
     println "decoded=${out.decoded_data}"
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d431d1f2a.nf` [silly_majorana] DSL2 - revision: 2e14c11716
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f69bda9cf.nf` [high_aryabhata] DSL2 - revision: 180147dfe3
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> status=ok
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -653,9 +618,9 @@ Expected shape highlights:
 - `null_value` remains `null`
 - typed NA values decode as plugin marker enums (not `null`)
 - nested mixtures of `NA_*` and `NULL` remain distinguishable
-- use helper functions
-  `isNULL/isNA/isNALogical/isNAInteger/isNADouble/isNACharacter` for
-  checks
+- helper checks:
+  `isNULL/isNA/isNALogical/isNAInteger/isNADouble/isNACharacter`
+- helper utilities: `naType/isMissing/coalesce/assertNotMissing`
 
 Resolution order is call option, then config, then default:
 
@@ -690,13 +655,8 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [compassionate_marconi] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [clever_euclid] DSL2 - revision: fbd21a0aa8
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
 #> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -729,13 +689,8 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmppZ0cty/readme-nextflow-12505d39d9e88b.nf` [modest_williams] DSL2 - revision: dcf9e5c2b8
+#> Launching `/tmp/RtmpsCYqzy/readme-nextflow-12835f19b7f74f.nf` [distracted_kalman] DSL2 - revision: dcf9e5c2b8
 #> 
-#> SLF4J(E): A service provider failed to instantiate:
-#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
-#> SLF4J(W): No SLF4J providers were found.
-#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
 #> status=error
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
