@@ -9,6 +9,8 @@ Arrow IPC and a value-graph payload for nested list/map arguments.
 The R launcher uses `nanoarrow::read_nanoarrow()` and
 `nanoarrow::write_nanoarrow()` for Arrow IPC stream I/O.
 
+Recent changes are tracked in `NEWS.md`.
+
 ## Build and test
 
 ``` bash
@@ -27,7 +29,7 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :testClasses UP-TO-DATE
 #> > Task :test UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 426ms
+#> BUILD SUCCESSFUL in 431ms
 #> 8 actionable tasks: 8 up-to-date
 ```
 
@@ -48,7 +50,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 424ms
+#> BUILD SUCCESSFUL in 409ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -96,7 +98,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074adeb6cb5b.nf` [marvelous_kimura] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de46ae4e65.nf` [agitated_brahmagupta] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -145,7 +147,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad3f1c0e47.nf` [crazy_leibniz] DSL2 - revision: 2774f29512
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de36e6225c.nf` [tiny_sax] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -191,7 +193,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad195fe46c.nf` [maniac_chandrasekhar] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de7ccabd97.nf` [spontaneous_murdock] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -236,7 +238,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad300cf71f.nf` [modest_lovelace] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de55a12693.nf` [spontaneous_volhard] DSL2 - revision: beccbcb99f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -252,6 +254,12 @@ workflow {
 `rRecords(...)` is a channel-friendly helper that guarantees
 list-of-records output. You can pass this result directly to
 `Channel.fromList(...)`.
+
+This follows the same pattern used by other Nextflow plugins that expose
+channel-native entry points (for example, SQL plugins exposing
+`channel.from...` factories): provide a plugin API that yields
+channel-friendly values and let the workflow compose standard channel
+operators.
 
 `rTable(...)` is an alias for `rRecords(...)` with
 `_payload_kind: 'table'` set by default.
@@ -279,7 +287,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad5ff246f4.nf` [nauseous_maxwell] DSL2 - revision: 588eb96d14
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de38cde54b.nf` [nasty_becquerel] DSL2 - revision: 588eb96d14
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -316,7 +324,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad6bfc3905.nf` [modest_hawking] DSL2 - revision: 2d2423bfda
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de7b62cd2d.nf` [cranky_magritte] DSL2 - revision: 2d2423bfda
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -351,7 +359,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7d12055e.nf` [voluminous_bell] DSL2 - revision: 277cebeada
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de128c8133.nf` [confident_mandelbrot] DSL2 - revision: 277cebeada
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -401,7 +409,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7c9f6ec8.nf` [cheesy_euclid] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de3734b514.nf` [peaceful_faggin] DSL2 - revision: cf3d01a459
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -418,6 +426,24 @@ workflow {
 - Per-call override: `_on_error: 'return'` to return structured error
   envelope instead of throwing
 - Config default: `nfR.on_error = 'throw'|'return'`
+
+## Table payload mode contract
+
+When `_payload_kind: 'table'` is used (or via `rTable(...)`), the plugin
+expects/returns table-shaped data and normalizes it to records at the
+API boundary.
+
+Contract:
+
+- Accepted result shapes for table mode:
+  - list-of-records (`List<Map>`)
+  - map-of-columns (`Map<String, List>`, equal-length scalar columns)
+- Returned shape to workflow code:
+  - always list-of-records (channel-friendly)
+- Notes:
+  - scalar-column constraint applies to map-of-columns conversion
+  - numeric values may appear as doubles on return due to R numeric
+    semantics
 
 Fail-fast (`_on_error: 'throw'`) example:
 
@@ -446,7 +472,7 @@ set -e
 echo "exit=$status"
 grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
 #> exit=1
-#> ERROR ~ rFunction failed [call_id=3ae36532-df8a-403f-824c-4f3c0bf97331] RRuntimeError: boom from throw mode
+#> ERROR ~ rFunction failed [call_id=21aec1b3-abcd-48cf-b06b-72b626510cd0] RRuntimeError: boom from throw mode
 ```
 
 ## R runtime selection
@@ -509,7 +535,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad519a7fed.nf` [serene_lamarr] DSL2 - revision: ef8e2aac66
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de6503b7f6.nf` [ecstatic_tesla] DSL2 - revision: ef8e2aac66
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -578,7 +604,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [tiny_keller] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [pedantic_dubinsky] DSL2 - revision: fbd21a0aa8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -617,7 +643,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7c73e337.nf` [fervent_varahamihira] DSL2 - revision: dcf9e5c2b8
+#> Launching `/tmp/RtmpNFIA6L/readme-nextflow-10b4de3e6b6ad4.nf` [prickly_cajal] DSL2 - revision: dcf9e5c2b8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype

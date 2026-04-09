@@ -48,6 +48,8 @@ knitr::knit_engines$set(nextflow = nextflow_engine)
 
 The R launcher uses `nanoarrow::read_nanoarrow()` and `nanoarrow::write_nanoarrow()` for Arrow IPC stream I/O.
 
+Recent changes are tracked in `NEWS.md`.
+
 ## Build and test
 
 ```{bash eval=TRUE}
@@ -198,6 +200,8 @@ workflow {
 
 `rRecords(...)` is a channel-friendly helper that guarantees list-of-records output. You can pass this result directly to `Channel.fromList(...)`.
 
+This follows the same pattern used by other Nextflow plugins that expose channel-native entry points (for example, SQL plugins exposing `channel.from...` factories): provide a plugin API that yields channel-friendly values and let the workflow compose standard channel operators.
+
 `rTable(...)` is an alias for `rRecords(...)` with `_payload_kind: 'table'` set by default.
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
@@ -309,6 +313,21 @@ workflow {
 - Default: throw on `status=error`
 - Per-call override: `_on_error: 'return'` to return structured error envelope instead of throwing
 - Config default: `nfR.on_error = 'throw'|'return'`
+
+## Table payload mode contract
+
+When `_payload_kind: 'table'` is used (or via `rTable(...)`), the plugin expects/returns table-shaped data and normalizes it to records at the API boundary.
+
+Contract:
+
+- Accepted result shapes for table mode:
+  - list-of-records (`List<Map>`)
+  - map-of-columns (`Map<String, List>`, equal-length scalar columns)
+- Returned shape to workflow code:
+  - always list-of-records (channel-friendly)
+- Notes:
+  - scalar-column constraint applies to map-of-columns conversion
+  - numeric values may appear as doubles on return due to R numeric semantics
 
 Fail-fast (`_on_error: 'throw'`) example:
 
