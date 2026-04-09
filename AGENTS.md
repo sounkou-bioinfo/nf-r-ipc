@@ -8,6 +8,7 @@ This file captures the implementation plan for an `nf-r` style Nextflow plugin t
 - Use Arrow IPC as the only protocol format for both control and data.
 - Keep the first release narrow, predictable, and testable.
 - Support direct nested list/map argument round-trip between Groovy and R.
+- Support channel-friendly record outputs (`rRecords`, `rTable`).
 
 ## Non-Goals (v1)
 
@@ -45,7 +46,7 @@ This follows the proven pattern: thin orchestration + typed columnar IPC + proce
   - `function` (utf8)
   - `script_mode` (utf8; `path` or `inline`)
   - `script_ref` (utf8; path or inline id)
-  - `payload_kind` (utf8; `table`, `records`, `scalar`)
+  - `payload_kind` (utf8; `value_graph` or `table`)
 - Batch 1..N/table name: `__nfr_data__`
 
 ### Response (`response.arrows`)
@@ -69,6 +70,8 @@ Supported values crossing the boundary:
 - list of records (multi-row table)
 - nested lists and named maps (direct round-trip)
 - primitive columns: integer, double, string, boolean, nulls
+- typed missing values: `na_logical`, `na_integer`, `na_double`, `na_character`
+- recursive data-frame-like values via `data_frame` tag (named equal-length scalar columns)
 
 Deferred:
 
@@ -90,7 +93,7 @@ Deferred:
 Mirror the `nf-python` call pattern on the Nextflow side:
 
 - User-facing call accepts named arguments map (`Map args`) and either inline code or script path.
-- Reserved keys are not forwarded as function args: `script`, `_executable`, `_r_libs`.
+- Reserved keys are not forwarded as function args: `function`, `script`, `_executable`, `_conda_env`, `_r_libs`, `_on_error`, `_payload_kind`.
 - Remaining keys are forwarded as named arguments to R.
 
 Equivalent shapes to support:
@@ -115,7 +118,7 @@ To support heterogeneous nested values without JSON, encode generic argument val
 - `parent_id` (int64, nullable) parent node id
 - `key` (utf8, nullable) map key when parent is a map/object
 - `index` (int32, nullable) position when parent is a list
-- `tag` (utf8) one of: `null`, `list`, `map`, `string`, `int64`, `float64`, `bool`
+- `tag` (utf8) one of: `null`, `na_logical`, `na_integer`, `na_double`, `na_character`, `list`, `map`, `data_frame`, `string`, `int64`, `float64`, `bool`
 - `v_string` (utf8, nullable)
 - `v_int64` (int64, nullable)
 - `v_float64` (float64, nullable)
@@ -144,7 +147,7 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 
 1. Add protocol validation guards (missing batch, schema mismatch, version mismatch).
 2. Add deterministic temp/scratch lifecycle and cleanup.
-3. Add config knobs (`executable`, mode stream/file, keep-scratch).
+3. Add config knobs (`executable`, `conda_executable`, `on_error`, `payload_kind`, mode stream/file, keep-scratch).
 4. Improve diagnostics (stderr capture, call id in exceptions).
 
 ### Phase 4 - Optional performance path
@@ -168,6 +171,10 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 - null handling across Java/R boundaries
 - inline code and script-path modes
 - nested list/map round-trip parity with `nf-python` style argument passing
+- `NA` vs `NULL` round-trip parity
+- atomic vector mapping parity
+- recursive `data_frame` mapping parity
+- channel-focused validations for `rRecords` and `_on_error: return`
 
 ### Compatibility tests
 
@@ -176,11 +183,12 @@ This keeps list/map passing Arrow-only while preserving nested structure for Gro
 
 ## MVP Acceptance Criteria
 
-- `include { rFunction } from 'plugin/nf-r'` works in a sample workflow.
+- `include { rFunction } from 'plugin/nf-r-ipc'` works in sample workflows.
 - No JSON is used for request/response payload or control.
 - End-to-end call succeeds for table input/output.
 - End-to-end call succeeds for nested list/map input/output.
 - End-to-end call fails with structured error for deliberate R error.
+- `rRecords` works for channel-oriented outputs.
 - Tests pass in CI.
 
 ## Suggested Initial Repository Tasks
