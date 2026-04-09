@@ -27,7 +27,7 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 #> > Task :testClasses UP-TO-DATE
 #> > Task :test UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 456ms
+#> BUILD SUCCESSFUL in 426ms
 #> 8 actionable tasks: 8 up-to-date
 ```
 
@@ -48,7 +48,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 416ms
+#> BUILD SUCCESSFUL in 424ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -96,7 +96,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff1372dfa7.nf` [nostalgic_wiles] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074adeb6cb5b.nf` [marvelous_kimura] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -145,7 +145,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff2747f5f7.nf` [curious_hilbert] DSL2 - revision: 2774f29512
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad3f1c0e47.nf` [crazy_leibniz] DSL2 - revision: 2774f29512
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -191,7 +191,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff6199816a.nf` [friendly_allen] DSL2 - revision: 7b069adc40
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad195fe46c.nf` [maniac_chandrasekhar] DSL2 - revision: 7b069adc40
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -236,7 +236,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff7e952881.nf` [trusting_montalcini] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad300cf71f.nf` [modest_lovelace] DSL2 - revision: beccbcb99f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -255,6 +255,76 @@ list-of-records output. You can pass this result directly to
 
 `rTable(...)` is an alias for `rRecords(...)` with
 `_payload_kind: 'table'` set by default.
+
+``` nextflow
+include { rTable } from 'plugin/nf-r-ipc'
+
+workflow {
+    def rows = rTable([
+        function: 'make_rows',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    println "rows=${rows}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad5ff246f4.nf` [nauseous_maxwell] DSL2 - revision: 588eb96d14
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
+```
+
+You can also call `rFunction(...)` directly with
+`_payload_kind: 'table'`:
+
+``` nextflow
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'make_rows',
+        _payload_kind: 'table',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    println "kind=${out.control.payload_kind} rows=${out.decoded_data}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad6bfc3905.nf` [modest_hawking] DSL2 - revision: 2d2423bfda
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> kind=table rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
+```
 
 ``` nextflow
 include { rRecords } from 'plugin/nf-r-ipc'
@@ -281,7 +351,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff1f3e8c2e.nf` [lonely_ardinghelli] DSL2 - revision: 277cebeada
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7d12055e.nf` [voluminous_bell] DSL2 - revision: 277cebeada
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -331,7 +401,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpAC2c8p/readme-nextflow-1039ff19bce20c.nf` [scruffy_gautier] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7c9f6ec8.nf` [cheesy_euclid] DSL2 - revision: cf3d01a459
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -349,6 +419,36 @@ workflow {
   envelope instead of throwing
 - Config default: `nfR.on_error = 'throw'|'return'`
 
+Fail-fast (`_on_error: 'throw'`) example:
+
+``` bash
+cat > /tmp/nfr_throw_example.nf <<'NF'
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  rFunction([
+    function: 'boom_fn',
+    _on_error: 'throw',
+    _executable: 'Rscript',
+    sample: 'S1'
+  ], '''
+    boom_fn <- function(sample) {
+      stop('boom from throw mode')
+    }
+  ''')
+}
+NF
+
+set +e
+nextflow run /tmp/nfr_throw_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_throw_example.log 2>&1
+status=$?
+set -e
+echo "exit=$status"
+grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
+#> exit=1
+#> ERROR ~ rFunction failed [call_id=3ae36532-df8a-403f-824c-4f3c0bf97331] RRuntimeError: boom from throw mode
+```
+
 ## R runtime selection
 
 The plugin now supports per-call runtime selectors similar to
@@ -359,6 +459,65 @@ The plugin now supports per-call runtime selectors similar to
 - `_r_libs`: value for R libs search path wiring
 
 `_executable` and `_conda_env` are mutually exclusive.
+
+Mutual exclusion guard example:
+
+``` bash
+cat > /tmp/nfr_runtime_guard_example.nf <<'NF'
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  rFunction([
+    function: 'f',
+    _executable: 'Rscript',
+    _conda_env: '/root/miniconda3'
+  ], '''
+    f <- function() list()
+  ''')
+}
+NF
+
+set +e
+nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_runtime_guard_example.log 2>&1
+status=$?
+set -e
+echo "exit=$status"
+grep -E "cannot be used together" /tmp/nfr_runtime_guard_example.log || true
+#> exit=1
+#> ERROR ~ The '_executable' and '_conda_env' options cannot be used together
+```
+
+`_r_libs` pass-through example:
+
+``` nextflow
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'show_libs',
+        _executable: 'Rscript',
+        _r_libs: '/tmp/nfr-r-libs'
+    ], '''
+        show_libs <- function() {
+          list(r_libs = Sys.getenv('R_LIBS'))
+        }
+    ''')
+
+    println "r_libs=${out.decoded_data.r_libs}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad519a7fed.nf` [serene_lamarr] DSL2 - revision: ef8e2aac66
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> r_libs=/tmp/nfr-r-libs
+```
 
 Type mapping notes (current):
 
@@ -405,3 +564,68 @@ Conda executable resolution uses:
 - `nfR.conda_executable` when configured
 - else `NFR_CONDA_EXE`
 - else `conda` from `PATH`
+
+`NFR_CONDA_EXE` override illustration:
+
+``` bash
+if [ -x /root/miniconda3/bin/conda ]; then
+  export NFR_CONDA_EXE=/root/miniconda3/bin/conda
+  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.1.0 -c validation/nextflow.config
+else
+  echo "Conda binary not found at /root/miniconda3/bin/conda; skipping override demo"
+fi
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `validation/conda_main.nf` [tiny_keller] DSL2 - revision: fbd21a0aa8
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> OK status=ok codec=arrow-java
+#> OK runtime=[/usr/bin/Rscript]
+#> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
+#> ERR status=error
+```
+
+Returned error envelopes include diagnostics fields (`error_class`,
+`error_message`) and launcher output text:
+
+``` nextflow
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def err = rFunction([
+        function: 'boom_fn',
+        _on_error: 'return',
+        _executable: 'Rscript'
+    ], '''
+        boom_fn <- function() {
+          stop('boom for diagnostics')
+        }
+    ''')
+
+    println "status=${err.control.status}"
+    println "error_class=${err.control.error_class}"
+    println "error_message=${err.control.error_message}"
+    println "launcher_output=${err.launcher_output}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmplSi8Y5/readme-nextflow-1074ad7c73e337.nf` [fervent_varahamihira] DSL2 - revision: dcf9e5c2b8
+#> 
+#> SLF4J(E): A service provider failed to instantiate:
+#> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
+#> SLF4J(W): No SLF4J providers were found.
+#> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+#> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+#> status=error
+#> error_class=RRuntimeError
+#> error_message=boom for diagnostics
+#> launcher_output=
+```

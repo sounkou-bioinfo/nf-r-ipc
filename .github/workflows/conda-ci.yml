@@ -36,7 +36,7 @@ jobs:
 
       - name: Install R runtime deps in base conda
         run: |
-          /usr/share/miniconda/bin/conda run -p /usr/share/miniconda Rscript -e "install.packages('nanoarrow', repos='https://cloud.r-project.org')"
+          /usr/share/miniconda/bin/conda run -p /usr/share/miniconda Rscript -e "install.packages(c('nanoarrow','rmarkdown'), repos='https://cloud.r-project.org')"
 
       - name: Build and test
         run: ./gradlew test --tests nextflow.nfr.integration.CondaLauncherIntegrationTest

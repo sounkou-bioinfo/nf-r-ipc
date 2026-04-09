@@ -42,7 +42,7 @@ jobs:
 
       - name: Install R runtime deps
         run: |
-          Rscript -e "install.packages('nanoarrow', repos='https://cloud.r-project.org')"
+          Rscript -e "install.packages(c('nanoarrow','rmarkdown'), repos='https://cloud.r-project.org')"
 
       - name: Tests
         run: make test

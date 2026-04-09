@@ -201,6 +201,51 @@ workflow {
 `rTable(...)` is an alias for `rRecords(...)` with `_payload_kind: 'table'` set by default.
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rTable } from 'plugin/nf-r-ipc'
+
+workflow {
+    def rows = rTable([
+        function: 'make_rows',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    println "rows=${rows}"
+}
+```
+
+You can also call `rFunction(...)` directly with `_payload_kind: 'table'`:
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'make_rows',
+        _payload_kind: 'table',
+        _executable: 'Rscript'
+    ], '''
+        make_rows <- function() {
+          data.frame(
+            sample = c('S1', 'S2'),
+            x = c(1, 2),
+            stringsAsFactors = FALSE
+          )
+        }
+    ''')
+
+    println "kind=${out.control.payload_kind} rows=${out.decoded_data}"
+}
+```
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
 include { rRecords } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -265,6 +310,34 @@ workflow {
 - Per-call override: `_on_error: 'return'` to return structured error envelope instead of throwing
 - Config default: `nfR.on_error = 'throw'|'return'`
 
+Fail-fast (`_on_error: 'throw'`) example:
+
+```{bash eval=TRUE}
+cat > /tmp/nfr_throw_example.nf <<'NF'
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  rFunction([
+    function: 'boom_fn',
+    _on_error: 'throw',
+    _executable: 'Rscript',
+    sample: 'S1'
+  ], '''
+    boom_fn <- function(sample) {
+      stop('boom from throw mode')
+    }
+  ''')
+}
+NF
+
+set +e
+nextflow run /tmp/nfr_throw_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_throw_example.log 2>&1
+status=$?
+set -e
+echo "exit=$status"
+grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
+```
+
 ## R runtime selection
 
 The plugin now supports per-call runtime selectors similar to `nf-python`:
@@ -274,6 +347,51 @@ The plugin now supports per-call runtime selectors similar to `nf-python`:
 - `_r_libs`: value for R libs search path wiring
 
 `_executable` and `_conda_env` are mutually exclusive.
+
+Mutual exclusion guard example:
+
+```{bash eval=TRUE}
+cat > /tmp/nfr_runtime_guard_example.nf <<'NF'
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  rFunction([
+    function: 'f',
+    _executable: 'Rscript',
+    _conda_env: '/root/miniconda3'
+  ], '''
+    f <- function() list()
+  ''')
+}
+NF
+
+set +e
+nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.1.0 >/tmp/nfr_runtime_guard_example.log 2>&1
+status=$?
+set -e
+echo "exit=$status"
+grep -E "cannot be used together" /tmp/nfr_runtime_guard_example.log || true
+```
+
+`_r_libs` pass-through example:
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'show_libs',
+        _executable: 'Rscript',
+        _r_libs: '/tmp/nfr-r-libs'
+    ], '''
+        show_libs <- function() {
+          list(r_libs = Sys.getenv('R_LIBS'))
+        }
+    ''')
+
+    println "r_libs=${out.decoded_data.r_libs}"
+}
+```
 
 Type mapping notes (current):
 
@@ -315,3 +433,37 @@ Conda executable resolution uses:
 - `nfR.conda_executable` when configured
 - else `NFR_CONDA_EXE`
 - else `conda` from `PATH`
+
+`NFR_CONDA_EXE` override illustration:
+
+```{bash eval=TRUE}
+if [ -x /root/miniconda3/bin/conda ]; then
+  export NFR_CONDA_EXE=/root/miniconda3/bin/conda
+  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.1.0 -c validation/nextflow.config
+else
+  echo "Conda binary not found at /root/miniconda3/bin/conda; skipping override demo"
+fi
+```
+
+Returned error envelopes include diagnostics fields (`error_class`, `error_message`) and launcher output text:
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def err = rFunction([
+        function: 'boom_fn',
+        _on_error: 'return',
+        _executable: 'Rscript'
+    ], '''
+        boom_fn <- function() {
+          stop('boom for diagnostics')
+        }
+    ''')
+
+    println "status=${err.control.status}"
+    println "error_class=${err.control.error_class}"
+    println "error_message=${err.control.error_message}"
+    println "launcher_output=${err.launcher_output}"
+}
+```
