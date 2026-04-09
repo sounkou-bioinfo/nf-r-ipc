@@ -37,12 +37,13 @@ decode_value <- function(nodes, id) {
   }
 
   if (tag == "map") {
-    out <- list()
-    if (nrow(children) == 0) return(out)
+    if (nrow(children) == 0) return(list())
+    out <- vector("list", nrow(children))
+    keys <- as.character(children$key)
     for (i in seq_len(nrow(children))) {
-      key <- children$key[[i]]
-      out[[key]] <- decode_value(nodes, children$value_id[[i]])
+      out[i] <- list(decode_value(nodes, children$value_id[[i]]))
     }
+    names(out) <- keys
     return(out)
   }
 
@@ -240,10 +241,12 @@ normalize_result_for_wire <- function(x) {
     if (is.null(names(x))) {
       return(lapply(x, normalize_result_for_wire))
     }
-    out <- list()
-    for (nm in names(x)) {
-      out[[nm]] <- normalize_result_for_wire(x[[nm]])
+    out <- vector("list", length(x))
+    keys <- names(x)
+    for (i in seq_along(x)) {
+      out[i] <- list(normalize_result_for_wire(x[[i]]))
     }
+    names(out) <- keys
     return(out)
   }
   x
