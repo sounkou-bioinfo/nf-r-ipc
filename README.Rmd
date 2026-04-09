@@ -431,6 +431,40 @@ Type mapping notes (current):
     - `NA_character_` -> `na_character`
   - these tags are preserved across round-trip and remain distinct from `null`
 
+Example (`NULL` + typed `NA_*` in one payload):
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+    def out = rFunction([
+        function: 'emit_missing',
+        _on_error: 'return',
+        _executable: 'Rscript'
+    ], '''
+        emit_missing <- function() {
+          list(
+            null_value = NULL,
+            na_logical = NA,
+            na_integer = NA_integer_,
+            na_double = NA_real_,
+            na_character = NA_character_,
+            nested = list(NA_real_, NULL, NA_character_)
+          )
+        }
+    ''')
+
+    println "status=${out.control.status}"
+    println "decoded=${out.decoded_data}"
+}
+```
+
+Expected shape highlights:
+
+- `null_value` remains `null`
+- typed NA values decode as distinct typed markers (not `null`)
+- nested mixtures of `NA_*` and `NULL` remain distinguishable
+
 Resolution order is call option, then config, then default:
 
 - `nfR.executable` (default `Rscript`)
