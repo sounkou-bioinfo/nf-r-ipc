@@ -27,7 +27,14 @@ All notable changes to `nf-r-ipc` are documented in this file.
   - `validation/conda_script_main.nf`
 - Missing-value helper predicates/utilities in plugin API:
   - `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
-  - `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+  - `naType`, `isMissing`, `coalesce`, `coalesceNULL`, `coalesceNA`, `assertNotMissing`, `renderValue`
+- Temporal conversion helpers in plugin API:
+  - `asLocalDate`, `asInstantUtc`, `asZonedDateTime`, `asDurationSeconds`
+- Extended normalized R class support:
+  - `ordered` factor -> string labels
+  - `difftime` -> numeric seconds
+- Integration test coverage for normalized class handling:
+  - `RTypeCoverageIntegrationTest`
 
 ### Changed
 - Runtime diagnostics now include launcher output tail in thrown errors.
@@ -35,6 +42,8 @@ All notable changes to `nf-r-ipc` are documented in this file.
 - Value-graph decode now enforces strict structural validation (single root, parent existence, key/index constraints, scalar value-column rules).
 - Table mode now fails fast on invalid shapes instead of best-effort fallback.
 - README reorganized into a didactic, end-to-end flow with concept-first sections and executable examples.
+- README now includes a real `mtcars` end-to-end example and helper cheat sheet.
+- Contract docs now explicitly cover normalized class mapping and helper API behavior.
 
 ### Fixed
 - Preserved named `NULL` entries in R map outputs (no key dropping during normalization).
