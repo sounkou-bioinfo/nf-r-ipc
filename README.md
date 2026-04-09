@@ -11,6 +11,8 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and
 
 Recent changes are tracked in `NEWS.md`.
 
+The strict wire/type contract is defined in `CONTRACT.md`.
+
 ## Build and test
 
 ``` bash
@@ -27,10 +29,18 @@ Recent changes are tracked in `NEWS.md`.
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test UP-TO-DATE
+#> > Task :test
 #> 
-#> BUILD SUCCESSFUL in 429ms
-#> 8 actionable tasks: 8 up-to-date
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 1s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ## Install locally
@@ -48,10 +58,22 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
-#> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 409ms
-#> 6 actionable tasks: 6 up-to-date
+#> > Task :installPlugin
+#> Plugin nf-r-ipc installed successfully!
+#> Installation location: /root/.nextflow/plugins
+#> Installation location determined by - Default location (~/.nextflow/plugins)
+#> 
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 478ms
+#> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
 ## Example Nextflow pipeline
@@ -98,7 +120,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190687b5f7b9f.nf` [happy_meninsky] DSL2 - revision: 3efd8eaaac
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb85d0e8621.nf` [reverent_bhaskara] DSL2 - revision: 3efd8eaaac
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -160,7 +182,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-119068564317d5.nf` [ridiculous_brattain] DSL2 - revision: 352621cd7e
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb82faa2514.nf` [backstabbing_lavoisier] DSL2 - revision: 352621cd7e
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -212,7 +234,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190682caf88a7.nf` [focused_mayer] DSL2 - revision: 558ef7cab4
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb82690a0dd.nf` [soggy_carson] DSL2 - revision: 558ef7cab4
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -257,7 +279,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-119068658d51c2.nf` [irreverent_torricelli] DSL2 - revision: beccbcb99f
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb855b1d150.nf` [cranky_swartz] DSL2 - revision: beccbcb99f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -307,7 +329,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-119068214c653e.nf` [cheeky_davinci] DSL2 - revision: a76e8925f2
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb86c5bcc4b.nf` [friendly_davinci] DSL2 - revision: a76e8925f2
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -344,7 +366,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-119068569ed2b.nf` [confident_yonath] DSL2 - revision: 588eb96d14
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb81fff5683.nf` [curious_banach] DSL2 - revision: 588eb96d14
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -396,7 +418,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190684ee571bf.nf` [nasty_volhard] DSL2 - revision: cf3d01a459
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb83a9cca0d.nf` [stoic_goodall] DSL2 - revision: cf3d01a459
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -432,6 +454,21 @@ Contract:
   - numeric values may appear as doubles on return due to R numeric
     semantics
 
+Strictness behavior:
+
+- invalid table-mode shapes fail fast with a `CodecException`
+- malformed value-graph payloads fail validation before decode
+- no best-effort fallback is applied for ambiguous table payloads
+
+Common invalid-shape examples that now fail by design:
+
+- map-of-columns with unequal lengths
+- map-of-columns with non-scalar column elements (nested list/map cells)
+- malformed graph rows (duplicate node ids, missing parents, invalid
+  key/index usage)
+
+This strict behavior is intentional to prevent hidden data bugs.
+
 Fail-fast (`_on_error: 'throw'`) example:
 
 ``` bash
@@ -459,7 +496,7 @@ set -e
 echo "exit=$status"
 grep -E "rFunction failed|boom from throw mode" /tmp/nfr_throw_example.log || true
 #> exit=1
-#> ERROR ~ rFunction failed [call_id=6b643793-b065-44ab-a084-857dffeedf49] RRuntimeError: boom from throw mode
+#> ERROR ~ rFunction failed [call_id=2c594730-d5db-4f1b-b5bf-ed0ea3a5d2f4] RRuntimeError: boom from throw mode
 ```
 
 ## R runtime selection
@@ -522,7 +559,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190686506d93f.nf` [ecstatic_maxwell] DSL2 - revision: ef8e2aac66
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb87d89aeeb.nf` [friendly_dijkstra] DSL2 - revision: ef8e2aac66
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -588,7 +625,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190681118c320.nf` [sharp_brattain] DSL2 - revision: d41c1bdf4f
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb8c8ba7d.nf` [sick_brown] DSL2 - revision: d41c1bdf4f
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -638,7 +675,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [focused_plateau] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [admiring_roentgen] DSL2 - revision: fbd21a0aa8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype
@@ -677,7 +714,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpmRZhdK/readme-nextflow-1190685b2a04.nf` [naughty_bartik] DSL2 - revision: dcf9e5c2b8
+#> Launching `/tmp/Rtmp6hp2pt/readme-nextflow-11fcb8796ae2ea.nf` [silly_poincare] DSL2 - revision: dcf9e5c2b8
 #> 
 #> SLF4J(E): A service provider failed to instantiate:
 #> org.slf4j.spi.SLF4JServiceProvider: ch.qos.logback.classic.spi.LogbackServiceProvider not a subtype

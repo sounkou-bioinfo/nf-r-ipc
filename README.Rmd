@@ -50,6 +50,8 @@ The R launcher uses `nanoarrow::read_nanoarrow()` and `nanoarrow::write_nanoarro
 
 Recent changes are tracked in `NEWS.md`.
 
+The strict wire/type contract is defined in `CONTRACT.md`.
+
 ## Build and test
 
 ```{bash eval=TRUE}
@@ -325,6 +327,20 @@ Contract:
 - Notes:
   - scalar-column constraint applies to map-of-columns conversion
   - numeric values may appear as doubles on return due to R numeric semantics
+
+Strictness behavior:
+
+- invalid table-mode shapes fail fast with a `CodecException`
+- malformed value-graph payloads fail validation before decode
+- no best-effort fallback is applied for ambiguous table payloads
+
+Common invalid-shape examples that now fail by design:
+
+- map-of-columns with unequal lengths
+- map-of-columns with non-scalar column elements (nested list/map cells)
+- malformed graph rows (duplicate node ids, missing parents, invalid key/index usage)
+
+This strict behavior is intentional to prevent hidden data bugs.
 
 Fail-fast (`_on_error: 'throw'`) example:
 
