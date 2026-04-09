@@ -108,6 +108,12 @@ workflow {
 
 This example executes real inline R functions (`echo`, `explode`) through the bundled launcher and reports `status=ok`/`status=error` envelopes.
 
+### Quickstart summary
+
+- `rFunction(...)`: call inline/scripted R and get structured envelope output.
+- `rTable(...)`: get table-mode results normalized as list-of-records.
+- `channelFromR(...)`: emit a channel directly from R-produced records.
+
 ## Conda-backed example
 
 `validation/conda_main.nf` demonstrates `_conda_env` resolution, with `validation/nextflow.config` setting:
@@ -261,52 +267,7 @@ workflow {
 }
 ```
 
-You can also call `rFunction(...)` directly with `_payload_kind: 'table'`:
-
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
-include { rFunction } from 'plugin/nf-r-ipc'
-
-workflow {
-    def out = rFunction([
-        function: 'make_rows',
-        _payload_kind: 'table',
-        _executable: 'Rscript'
-    ], '''
-        make_rows <- function() {
-          data.frame(
-            sample = c('S1', 'S2'),
-            x = c(1, 2),
-            stringsAsFactors = FALSE
-          )
-        }
-    ''')
-
-    println "kind=${out.control.payload_kind} rows=${out.decoded_data}"
-}
-```
-
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
-include { rRecords } from 'plugin/nf-r-ipc'
-
-workflow {
-    def rows = rRecords([
-        function: 'make_rows',
-        _executable: 'Rscript'
-    ], '''
-        make_rows <- function() {
-          data.frame(
-            sample = c('S1', 'S2'),
-            x = c(1, 2),
-            stringsAsFactors = FALSE
-          )
-        }
-    ''')
-
-    Channel.fromList(rows)
-      .map { row -> [sample: row.sample, x2: row.x * 2] }
-      .view { row -> "ROW ${row.sample} x2=${row.x2}" }
-}
-```
+`rFunction(...)` also supports table mode directly via `_payload_kind: 'table'` when you need raw envelope access.
 
 ## Channel error branching
 
