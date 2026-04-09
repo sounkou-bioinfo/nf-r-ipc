@@ -12,6 +12,7 @@ import nextflow.nfr.codec.CodecFactory
 import nextflow.nfr.codec.CodecException
 import nextflow.nfr.codec.DecodedResponse
 import nextflow.nfr.codec.IpcCodec
+import nextflow.nfr.value.NAValue
 import nextflow.plugin.extension.Function
 import nextflow.plugin.extension.PluginExtensionPoint
 
@@ -48,6 +49,36 @@ class RExtension extends PluginExtensionPoint {
     @Function
     Object rFunction(String code = '') {
         return rFunction([:], code)
+    }
+
+    @Function
+    boolean isNULL(Object value) {
+        return value == null
+    }
+
+    @Function
+    boolean isNA(Object value) {
+        return value instanceof NAValue
+    }
+
+    @Function
+    boolean isNALogical(Object value) {
+        return value == NAValue.LOGICAL
+    }
+
+    @Function
+    boolean isNAInteger(Object value) {
+        return value == NAValue.INTEGER
+    }
+
+    @Function
+    boolean isNADouble(Object value) {
+        return value == NAValue.DOUBLE
+    }
+
+    @Function
+    boolean isNACharacter(Object value) {
+        return value == NAValue.CHARACTER
     }
 
     @Function

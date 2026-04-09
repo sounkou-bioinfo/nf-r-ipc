@@ -2,6 +2,7 @@ package nextflow.nfr
 
 import spock.lang.Specification
 import nextflow.nfr.codec.CodecException
+import nextflow.nfr.value.NAValue
 
 class RExtensionTest extends Specification {
 
@@ -141,5 +142,30 @@ class RExtensionTest extends Specification {
         then:
         def e = thrown(CodecException)
         e.message.contains('Invalid table payload shape')
+    }
+
+    def 'should expose missing-value helper predicates'() {
+        given:
+        def ext = new TestRExtension()
+
+        expect:
+        ext.isNULL(null)
+        !ext.isNULL(NAValue.DOUBLE)
+
+        ext.isNA(NAValue.LOGICAL)
+        ext.isNA(NAValue.INTEGER)
+        ext.isNA(NAValue.DOUBLE)
+        ext.isNA(NAValue.CHARACTER)
+        !ext.isNA(null)
+        !ext.isNA(1)
+
+        ext.isNALogical(NAValue.LOGICAL)
+        !ext.isNALogical(NAValue.INTEGER)
+        ext.isNAInteger(NAValue.INTEGER)
+        !ext.isNAInteger(NAValue.DOUBLE)
+        ext.isNADouble(NAValue.DOUBLE)
+        !ext.isNADouble(NAValue.CHARACTER)
+        ext.isNACharacter(NAValue.CHARACTER)
+        !ext.isNACharacter(NAValue.LOGICAL)
     }
 }

@@ -450,7 +450,7 @@ Type mapping notes (current):
 Example (`NULL` + typed `NA_*` in one payload):
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.1.0'}
-include { rFunction } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter } from 'plugin/nf-r-ipc'
 
 workflow {
     def out = rFunction([
@@ -471,6 +471,18 @@ workflow {
     ''')
 
     println "status=${out.control.status}"
+    assert isNULL(out.decoded_data.null_value)
+    assert isNA(out.decoded_data.na_logical)
+    assert isNA(out.decoded_data.na_integer)
+    assert isNA(out.decoded_data.na_double)
+    assert isNA(out.decoded_data.na_character)
+    assert isNALogical(out.decoded_data.na_logical)
+    assert isNAInteger(out.decoded_data.na_integer)
+    assert isNADouble(out.decoded_data.na_double)
+    assert isNACharacter(out.decoded_data.na_character)
+    assert isNADouble(out.decoded_data.nested[0])
+    assert isNULL(out.decoded_data.nested[1])
+    assert isNACharacter(out.decoded_data.nested[2])
     println "decoded=${out.decoded_data}"
 }
 ```
@@ -478,8 +490,9 @@ workflow {
 Expected shape highlights:
 
 - `null_value` remains `null`
-- typed NA values decode as distinct typed markers (not `null`)
+- typed NA values decode as plugin marker enums (not `null`)
 - nested mixtures of `NA_*` and `NULL` remain distinguishable
+- use helper functions `isNULL/isNA/isNALogical/isNAInteger/isNADouble/isNACharacter` for checks
 
 Resolution order is call option, then config, then default:
 
