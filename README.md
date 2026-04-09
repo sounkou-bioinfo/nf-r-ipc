@@ -31,7 +31,7 @@ side).
 #> > Task :testClasses UP-TO-DATE
 #> > Task :test UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 450ms
+#> BUILD SUCCESSFUL in 425ms
 #> 8 actionable tasks: 8 up-to-date
 ```
 
@@ -48,7 +48,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 385ms
+#> BUILD SUCCESSFUL in 426ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -94,7 +94,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7229fc84c.nf` [serene_easley] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e493fccddf1.nf` [desperate_visvesvaraya] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -191,7 +191,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe710ddeeb5.nf` [romantic_jones] DSL2 - revision: 4e431e9b66
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49560bfa4e.nf` [nasty_ritchie] DSL2 - revision: 4e431e9b66
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -224,7 +224,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe77961d7ea.nf` [serene_becquerel] DSL2 - revision: d27ecdb908
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49131441ec.nf` [jovial_euclid] DSL2 - revision: d27ecdb908
 #> 
 #> types=[fac:A, date:2024-01-02, ts:2024-01-02 03:04:05 UTC]
 ```
@@ -256,7 +256,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7168764a7.nf` [insane_ride] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e491e494ad0.nf` [angry_brattain] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -286,7 +286,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe74c5bdd24.nf` [elegant_austin] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e496d812172.nf` [goofy_yalow] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -313,7 +313,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7ce232eb.nf` [sleepy_cajal] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e49498e3110.nf` [kickass_plateau] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -380,7 +380,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [stoic_golick] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [nostalgic_brattain] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -403,7 +403,10 @@ workflow {
   ], '''
       emit_mtcars <- function() {
         out <- mtcars
+        # Row names are metadata in R; make the identifier explicit as a column
+        # so it survives table/record conversion in a predictable way.
         out$car <- rownames(mtcars)
+        # Drop row names to avoid maintaining two parallel identifiers.
         rownames(out) <- NULL
         out
       }
@@ -427,7 +430,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe757fa849a.nf` [agitated_faraday] DSL2 - revision: eafab5b785
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e492a33a8b6.nf` [crazy_euler] DSL2 - revision: 1b43bf73be
 #> 
 #> rows=32
 #> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
@@ -490,7 +493,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe77d7119fe.nf` [hopeful_heyrovsky] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/RtmpMhvJAG/readme-nextflow-132e496db36ff8.nf` [nostalgic_poisson] DSL2 - revision: 2e081cf29f
 #> 
 #> CHAN A v3=9.0
 #> TABLE S1 x2=2.0

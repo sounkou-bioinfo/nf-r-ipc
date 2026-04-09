@@ -351,7 +351,10 @@ workflow {
   ], '''
       emit_mtcars <- function() {
         out <- mtcars
+        # Row names are metadata in R; make the identifier explicit as a column
+        # so it survives table/record conversion in a predictable way.
         out$car <- rownames(mtcars)
+        # Drop row names to avoid maintaining two parallel identifiers.
         rownames(out) <- NULL
         out
       }
