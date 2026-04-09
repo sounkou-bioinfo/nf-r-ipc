@@ -101,6 +101,16 @@ class RExtension extends PluginExtensionPoint {
     }
 
     @Function
+    Object coalesceNULL(Object value, Object fallback) {
+        return isNULL(value) ? fallback : value
+    }
+
+    @Function
+    Object coalesceNA(Object value, Object fallback) {
+        return isNA(value) ? fallback : value
+    }
+
+    @Function
     Object assertNotMissing(Object value) {
         return assertNotMissing(value, 'value')
     }
@@ -113,6 +123,13 @@ class RExtension extends PluginExtensionPoint {
         String name = (label == null || label.trim().isEmpty()) ? 'value' : label
         String type = isNULL(value) ? 'NULL' : "NA<${naType(value)}>"
         throw new IllegalArgumentException("Missing value for ${name}: ${type}")
+    }
+
+    @Function
+    String renderValue(Object value) {
+        if (isNULL(value)) return 'NULL'
+        if (isNA(value)) return "NA<${naType(value)}>"
+        return String.valueOf(value)
     }
 
     @Function

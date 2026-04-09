@@ -93,3 +93,33 @@ Supported tags:
 
 - Wire `int64` values map to R double semantics in launcher responses.
 - `float64` preserves `NaN`, `Inf`, and `-Inf`.
+
+## R Class Normalization (launcher responses)
+
+To keep the wire contract narrow and predictable, the launcher normalizes selected R classes before encoding:
+
+- `factor` -> `string` values (level labels)
+- `Date` -> ISO date `string` (`YYYY-MM-DD`)
+- `POSIXct`/`POSIXlt`/`POSIXt` -> UTC timestamp `string`
+
+This normalization is applied recursively, including values inside returned data-frame rows.
+
+## Missing-Value Helper API (Nextflow side)
+
+The plugin exposes helpers for explicit missing-value handling in workflow code:
+
+- Predicates:
+  - `isNULL(x)`
+  - `isNA(x)`
+  - `isNALogical(x)`
+  - `isNAInteger(x)`
+  - `isNADouble(x)`
+  - `isNACharacter(x)`
+  - `isMissing(x)` (`NULL` or typed `NA`)
+- Utilities:
+  - `naType(x)` -> `logical|integer|double|character|null`
+  - `coalesce(x, fallback)`
+  - `coalesceNULL(x, fallback)`
+  - `coalesceNA(x, fallback)`
+  - `assertNotMissing(x[, label])`
+  - `renderValue(x)` -> stable string form (`NULL`, `NA<double>`, etc.)

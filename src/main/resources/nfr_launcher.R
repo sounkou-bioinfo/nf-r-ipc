@@ -234,8 +234,17 @@ normalize_arg_for_r <- function(x) {
 }
 
 normalize_result_for_wire <- function(x) {
+  if (inherits(x, "factor")) {
+    return(as.character(x))
+  }
+  if (inherits(x, "Date")) {
+    return(as.character(x))
+  }
+  if (inherits(x, "POSIXct") || inherits(x, "POSIXlt") || inherits(x, "POSIXt")) {
+    return(format(x, tz = "UTC", usetz = TRUE))
+  }
   if (inherits(x, "data.frame")) {
-    return(lapply(seq_len(nrow(x)), function(i) as.list(x[i, , drop = FALSE])))
+    return(lapply(seq_len(nrow(x)), function(i) normalize_result_for_wire(as.list(x[i, , drop = FALSE]))))
   }
   if (is.list(x)) {
     if (is.null(names(x))) {

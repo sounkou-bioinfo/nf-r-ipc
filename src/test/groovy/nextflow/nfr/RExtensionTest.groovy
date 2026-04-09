@@ -183,6 +183,21 @@ class RExtensionTest extends Specification {
         ext.coalesce(NAValue.INTEGER, 7) == 7
         ext.coalesce('ok', 'fallback') == 'ok'
 
+        ext.coalesceNULL(null, 'null-fallback') == 'null-fallback'
+        ext.coalesceNULL(NAValue.DOUBLE, 'null-fallback') == NAValue.DOUBLE
+        ext.coalesceNULL('ok', 'null-fallback') == 'ok'
+
+        ext.coalesceNA(NAValue.CHARACTER, 'na-fallback') == 'na-fallback'
+        ext.coalesceNA(null, 'na-fallback') == null
+        ext.coalesceNA('ok', 'na-fallback') == 'ok'
+
+        ext.renderValue(null) == 'NULL'
+        ext.renderValue(NAValue.LOGICAL) == 'NA<logical>'
+        ext.renderValue(NAValue.INTEGER) == 'NA<integer>'
+        ext.renderValue(NAValue.DOUBLE) == 'NA<double>'
+        ext.renderValue(NAValue.CHARACTER) == 'NA<character>'
+        ext.renderValue('S1') == 'S1'
+
         ext.assertNotMissing('ok') == 'ok'
         ext.assertNotMissing(1, 'x') == 1
     }

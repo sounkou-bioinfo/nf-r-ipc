@@ -111,6 +111,10 @@ Current type behavior:
   - `data.frame` outputs are normalized to list-of-records
   - map-of-equal-length scalar-columns uses `data_frame` tag
 - `int64` in R is represented via R numeric semantics (`double`)
+- R class normalization in launcher responses:
+  - `factor` -> string labels
+  - `Date` -> `YYYY-MM-DD` strings
+  - `POSIXct/POSIXlt/POSIXt` -> UTC timestamp strings
 
 ### Missing values: `NULL` vs typed `NA`
 
@@ -122,10 +126,10 @@ The plugin keeps these distinct:
 Use helper functions from the plugin API:
 
 - Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
-- Utilities: `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+- Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`, `coalesceNA`, `assertNotMissing`, `renderValue`
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; assertNotMissing } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -170,10 +174,42 @@ workflow {
   assert coalesce(out.decoded_data.null_value, 'fallback-null') == 'fallback-null'
   assert coalesce(out.decoded_data.na_integer, 99) == 99
   assert coalesce('present', 'fallback') == 'present'
+  assert coalesceNULL(out.decoded_data.null_value, 'fallback-only-null') == 'fallback-only-null'
+  assert coalesceNULL(out.decoded_data.na_double, 'fallback-only-null') == out.decoded_data.na_double
+  assert coalesceNA(out.decoded_data.na_character, 'fallback-only-na') == 'fallback-only-na'
+  assert coalesceNA(out.decoded_data.null_value, 'fallback-only-na') == null
 
   assert assertNotMissing('S1', 'sample_id') == 'S1'
+  assert renderValue(out.decoded_data.na_double) == 'NA<double>'
+  assert renderValue(out.decoded_data.null_value) == 'NULL'
 
   println "decoded=${out.decoded_data}"
+}
+```
+
+### R class normalization example
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  def out = rFunction([
+      function: 'emit_types',
+      _executable: 'Rscript'
+  ], '''
+      emit_types <- function() {
+        list(
+          fac = factor('A'),
+          date = as.Date('2024-01-02'),
+          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC')
+        )
+      }
+  ''')
+
+  assert out.decoded_data.fac == 'A'
+  assert out.decoded_data.date == '2024-01-02'
+  assert out.decoded_data.ts.contains('UTC')
+  println "types=${out.decoded_data}"
 }
 ```
 

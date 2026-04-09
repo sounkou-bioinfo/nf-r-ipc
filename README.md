@@ -17,19 +17,20 @@ side).
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
+#> Starting a Gradle Daemon, 1 busy and 2 stopped Daemons could not be reused, use --status for details
 #> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
 #> > Task :classes UP-TO-DATE
 #> > Task :extensionPoints UP-TO-DATE
-#> > Task :jar
-#> > Task :packagePlugin
-#> > Task :assemble
+#> > Task :jar UP-TO-DATE
+#> > Task :packagePlugin UP-TO-DATE
+#> > Task :assemble UP-TO-DATE
 #> > Task :compileTestJava NO-SOURCE
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test UP-TO-DATE
+#> > Task :test
 #> 
 #> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
 #> 
@@ -39,8 +40,8 @@ side).
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 686ms
-#> 8 actionable tasks: 2 executed, 6 up-to-date
+#> BUILD SUCCESSFUL in 5s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ``` bash
@@ -54,22 +55,10 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
+#> > Task :installPlugin UP-TO-DATE
 #> 
-#> > Task :installPlugin
-#> Plugin nf-r-ipc installed successfully!
-#> Installation location: /root/.nextflow/plugins
-#> Installation location determined by - Default location (~/.nextflow/plugins)
-#> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 492ms
-#> 6 actionable tasks: 1 executed, 5 up-to-date
+#> BUILD SUCCESSFUL in 394ms
+#> 6 actionable tasks: 6 up-to-date
 ```
 
 ## Mental model
@@ -114,7 +103,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb917cbd1bd5.nf` [adoring_magritte] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec7d85d46e.nf` [agitated_mccarthy] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -131,6 +120,10 @@ Current type behavior:
   - `data.frame` outputs are normalized to list-of-records
   - map-of-equal-length scalar-columns uses `data_frame` tag
 - `int64` in R is represented via R numeric semantics (`double`)
+- R class normalization in launcher responses:
+  - `factor` -\> string labels
+  - `Date` -\> `YYYY-MM-DD` strings
+  - `POSIXct/POSIXlt/POSIXt` -\> UTC timestamp strings
 
 ### Missing values: `NULL` vs typed `NA`
 
@@ -143,10 +136,11 @@ Use helper functions from the plugin API:
 
 - Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`,
   `isNADouble`, `isNACharacter`
-- Utilities: `naType`, `isMissing`, `coalesce`, `assertNotMissing`
+- Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`,
+  `coalesceNA`, `assertNotMissing`, `renderValue`
 
 ``` nextflow
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; assertNotMissing } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -191,8 +185,14 @@ workflow {
   assert coalesce(out.decoded_data.null_value, 'fallback-null') == 'fallback-null'
   assert coalesce(out.decoded_data.na_integer, 99) == 99
   assert coalesce('present', 'fallback') == 'present'
+  assert coalesceNULL(out.decoded_data.null_value, 'fallback-only-null') == 'fallback-only-null'
+  assert coalesceNULL(out.decoded_data.na_double, 'fallback-only-null') == out.decoded_data.na_double
+  assert coalesceNA(out.decoded_data.na_character, 'fallback-only-na') == 'fallback-only-na'
+  assert coalesceNA(out.decoded_data.null_value, 'fallback-only-na') == null
 
   assert assertNotMissing('S1', 'sample_id') == 'S1'
+  assert renderValue(out.decoded_data.na_double) == 'NA<double>'
+  assert renderValue(out.decoded_data.null_value) == 'NULL'
 
   println "decoded=${out.decoded_data}"
 }
@@ -200,9 +200,42 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb91416bc49e.nf` [ridiculous_allen] DSL2 - revision: 139bf87e1b
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec271070f.nf` [pensive_solvay] DSL2 - revision: 4e431e9b66
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
+```
+
+### R class normalization example
+
+``` nextflow
+include { rFunction } from 'plugin/nf-r-ipc'
+
+workflow {
+  def out = rFunction([
+      function: 'emit_types',
+      _executable: 'Rscript'
+  ], '''
+      emit_types <- function() {
+        list(
+          fac = factor('A'),
+          date = as.Date('2024-01-02'),
+          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC')
+        )
+      }
+  ''')
+
+  assert out.decoded_data.fac == 'A'
+  assert out.decoded_data.date == '2024-01-02'
+  assert out.decoded_data.ts.contains('UTC')
+  println "types=${out.decoded_data}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec3d04ae70.nf` [pedantic_raman] DSL2 - revision: d27ecdb908
+#> 
+#> types=[fac:A, date:2024-01-02, ts:2024-01-02 03:04:05 UTC]
 ```
 
 ## Error handling modes
@@ -232,7 +265,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb9140435610.nf` [spontaneous_boyd] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec11d6e473.nf` [distraught_turing] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -262,7 +295,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb915da058a6.nf` [high_wilson] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec6ccd0536.nf` [happy_brown] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -289,7 +322,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb917eb6b0ec.nf` [cheesy_plateau] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec6c08a938.nf` [amazing_moriondo] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -356,7 +389,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [small_swirles] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [golden_yonath] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -421,10 +454,10 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpZrKvmM/readme-nextflow-12bb911e1e0535.nf` [nasty_shockley] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec42b3b996.nf` [pensive_jennings] DSL2 - revision: 2e081cf29f
 #> 
-#> TABLE S1 x2=2.0
 #> CHAN A v3=9.0
-#> TABLE S2 x2=0
+#> TABLE S1 x2=2.0
 #> CHAN B v3=12.0
+#> TABLE S2 x2=0
 ```
