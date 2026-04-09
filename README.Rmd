@@ -119,9 +119,15 @@ This example executes real inline R functions (`echo`, `explode`) through the bu
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
+    def condaPrefix = '/root/miniconda3'
+    if( !new File(condaPrefix).isDirectory() ) {
+        println "SKIP conda-backed example: missing ${condaPrefix}"
+        return
+    }
+
     def ok = rFunction([
         function: 'echo',
-        _conda_env: '/root/miniconda3',
+        _conda_env: condaPrefix,
         sample: 'S1',
         values: [1, 2, 3],
         meta: [batch: 'B1', flags: [true, false, null]]
@@ -153,10 +159,16 @@ Expected output shape:
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
+    def condaPrefix = '/root/miniconda3'
+    if( !new File(condaPrefix).isDirectory() ) {
+        println "SKIP external-script conda example: missing ${condaPrefix}"
+        return
+    }
+
     def ok = rFunction([
         function: 'echo_external',
         script: 'validation/scripts/echo_external.R',
-        _conda_env: '/root/miniconda3',
+        _conda_env: condaPrefix,
         sample: 'S1',
         values: [1, 2, 3],
         meta: [batch: 'B1', flags: [true, false, null]]
