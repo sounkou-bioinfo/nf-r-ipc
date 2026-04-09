@@ -113,8 +113,10 @@ Current type behavior:
 - `int64` in R is represented via R numeric semantics (`double`)
 - R class normalization in launcher responses:
   - `factor` -> string labels
+  - `ordered` factor -> string labels
   - `Date` -> `YYYY-MM-DD` strings
   - `POSIXct/POSIXlt/POSIXt` -> UTC timestamp strings
+  - `difftime` -> seconds as numeric values
 
 ### Missing values: `NULL` vs typed `NA`
 
@@ -126,7 +128,7 @@ The plugin keeps these distinct:
 Use helper functions from the plugin API:
 
 - Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`, `isNADouble`, `isNACharacter`
-- Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`, `coalesceNA`, `assertNotMissing`, `renderValue`
+- Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`, `coalesceNA`, `assertNotMissing`, `renderValue`, `asLocalDate`, `asInstantUtc`, `asZonedDateTime`, `asDurationSeconds`
 
 Helper cheat sheet:
 
@@ -142,9 +144,13 @@ Helper cheat sheet:
 | `coalesceNA(x, y)` | Fallback only for typed `NA` | `coalesceNA(row.x, 0)` |
 | `assertNotMissing(x, label)` | Throw on missing values | `assertNotMissing(row.sample, 'sample')` |
 | `renderValue(x)` | Stable display form for logs | `renderValue(row.score)` |
+| `asLocalDate(x)` | Parse normalized `Date` string to `LocalDate` | `asLocalDate(row.date)` |
+| `asInstantUtc(x)` | Parse normalized UTC timestamp to `Instant` | `asInstantUtc(row.ts)` |
+| `asZonedDateTime(x[, zone])` | Convert normalized timestamp to `ZonedDateTime` | `asZonedDateTime(row.ts, 'UTC')` |
+| `asDurationSeconds(x)` | Convert numeric seconds to `Duration` | `asDurationSeconds(row.dt)` |
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -205,7 +211,7 @@ workflow {
 ### R class normalization example
 
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
-include { rFunction } from 'plugin/nf-r-ipc'
+include { rFunction; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -215,15 +221,27 @@ workflow {
       emit_types <- function() {
         list(
           fac = factor('A'),
+          ord = ordered('high', levels = c('low', 'medium', 'high')),
           date = as.Date('2024-01-02'),
-          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC')
+          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC'),
+          dt = as.difftime(125, units='secs'),
+          deep = list(level1 = list(level2 = list(ts = as.POSIXct('2024-01-03 04:05:06', tz='UTC'))))
         )
       }
   ''')
 
   assert out.decoded_data.fac == 'A'
+  assert out.decoded_data.ord == 'high'
   assert out.decoded_data.date == '2024-01-02'
   assert out.decoded_data.ts.contains('UTC')
+  assert ((Number)out.decoded_data.dt).doubleValue() == 125d
+
+  assert asLocalDate(out.decoded_data.date).toString() == '2024-01-02'
+  assert asInstantUtc(out.decoded_data.ts).toString().startsWith('2024-01-02T03:04:05Z')
+  assert asZonedDateTime(out.decoded_data.ts, 'Europe/Paris').zone.id == 'Europe/Paris'
+  assert asDurationSeconds(out.decoded_data.dt).seconds == 125L
+
+  assert out.decoded_data.deep.level1.level2.ts.contains('UTC')
   println "types=${out.decoded_data}"
 }
 ```
@@ -234,8 +252,9 @@ Current normalization intentionally keeps the contract narrow:
 
 - `factor` values are returned as strings (levels), not factor objects.
 - `Date`/`POSIX*` are returned as strings, not Java date-time objects.
+- Use `asLocalDate/asInstantUtc/asZonedDateTime` helpers for opt-in Java time conversion.
 - Deep list-columns and arbitrary R object graphs are not a supported wire shape.
-- No object identity/class round-trip guarantees beyond documented normalized forms.
+- Deep nested list/map values are supported; arbitrary R object identity/class round-trip is not guaranteed.
 
 If you need richer semantics, convert explicitly in R before returning.
 

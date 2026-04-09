@@ -4,6 +4,12 @@ import groovy.transform.CompileStatic
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import nextflow.Channel
 import nextflow.conda.CondaCache
@@ -18,6 +24,7 @@ import nextflow.plugin.extension.PluginExtensionPoint
 
 @CompileStatic
 class RExtension extends PluginExtensionPoint {
+    private static final DateTimeFormatter R_UTC_TIMESTAMP = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss z')
 
     @CompileStatic
     static class LaunchResult {
@@ -130,6 +137,52 @@ class RExtension extends PluginExtensionPoint {
         if (isNULL(value)) return 'NULL'
         if (isNA(value)) return "NA<${naType(value)}>"
         return String.valueOf(value)
+    }
+
+    @Function
+    LocalDate asLocalDate(Object value) {
+        if (value == null) return null
+        if (value instanceof LocalDate) return (LocalDate)value
+        return LocalDate.parse(String.valueOf(value).trim())
+    }
+
+    @Function
+    Instant asInstantUtc(Object value) {
+        if (value == null) return null
+        if (value instanceof Instant) return (Instant)value
+        String s = String.valueOf(value).trim()
+        try {
+            return Instant.parse(s)
+        }
+        catch(Exception ignored) {
+            return ZonedDateTime.parse(s, R_UTC_TIMESTAMP).toInstant()
+        }
+    }
+
+    @Function
+    ZonedDateTime asZonedDateTime(Object value) {
+        return asZonedDateTime(value, 'UTC')
+    }
+
+    @Function
+    ZonedDateTime asZonedDateTime(Object value, String zoneId) {
+        if (value == null) return null
+        if (value instanceof ZonedDateTime) return (ZonedDateTime)value
+        ZoneId zone = ZoneId.of((zoneId == null || zoneId.trim().isEmpty()) ? 'UTC' : zoneId)
+        return asInstantUtc(value).atZone(zone)
+    }
+
+    @Function
+    Duration asDurationSeconds(Object value) {
+        if (value == null) return null
+        if (value instanceof Duration) return (Duration)value
+        if (value instanceof Number) {
+            long millis = Math.round(((Number)value).doubleValue() * 1000d)
+            return Duration.ofMillis(millis)
+        }
+        double seconds = Double.parseDouble(String.valueOf(value).trim())
+        long millis = Math.round(seconds * 1000d)
+        return Duration.ofMillis(millis)
     }
 
     @Function

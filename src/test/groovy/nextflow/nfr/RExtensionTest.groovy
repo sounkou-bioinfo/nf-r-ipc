@@ -1,5 +1,9 @@
 package nextflow.nfr
 
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import spock.lang.Specification
 import nextflow.nfr.codec.CodecException
 import nextflow.nfr.value.NAValue
@@ -197,6 +201,13 @@ class RExtensionTest extends Specification {
         ext.renderValue(NAValue.DOUBLE) == 'NA<double>'
         ext.renderValue(NAValue.CHARACTER) == 'NA<character>'
         ext.renderValue('S1') == 'S1'
+
+        ext.asLocalDate('2024-01-02') == LocalDate.of(2024, 1, 2)
+        ext.asInstantUtc('2024-01-02 03:04:05 UTC') == Instant.parse('2024-01-02T03:04:05Z')
+        ext.asZonedDateTime('2024-01-02 03:04:05 UTC').zone == ZoneId.of('UTC')
+        ext.asZonedDateTime('2024-01-02 03:04:05 UTC', 'Europe/Paris').zone == ZoneId.of('Europe/Paris')
+        ext.asDurationSeconds(2.5d) == Duration.ofMillis(2500)
+        ext.asDurationSeconds('1.25') == Duration.ofMillis(1250)
 
         ext.assertNotMissing('ok') == 'ok'
         ext.assertNotMissing(1, 'x') == 1

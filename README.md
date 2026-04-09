@@ -29,10 +29,18 @@ side).
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test UP-TO-DATE
+#> > Task :test
 #> 
-#> BUILD SUCCESSFUL in 427ms
-#> 8 actionable tasks: 8 up-to-date
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 1s
+#> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
 ``` bash
@@ -46,10 +54,22 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
-#> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 443ms
-#> 6 actionable tasks: 6 up-to-date
+#> > Task :installPlugin
+#> Plugin nf-r-ipc installed successfully!
+#> Installation location: /root/.nextflow/plugins
+#> Installation location determined by - Default location (~/.nextflow/plugins)
+#> 
+#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
+#> 
+#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#> 
+#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#> 
+#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#> 
+#> BUILD SUCCESSFUL in 464ms
+#> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
 ## Mental model
@@ -94,7 +114,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-13705773032485.nf` [mighty_lattes] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed18f6bcdc.nf` [marvelous_becquerel] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -113,8 +133,10 @@ Current type behavior:
 - `int64` in R is represented via R numeric semantics (`double`)
 - R class normalization in launcher responses:
   - `factor` -\> string labels
+  - `ordered` factor -\> string labels
   - `Date` -\> `YYYY-MM-DD` strings
   - `POSIXct/POSIXlt/POSIXt` -\> UTC timestamp strings
+  - `difftime` -\> seconds as numeric values
 
 ### Missing values: `NULL` vs typed `NA`
 
@@ -128,25 +150,30 @@ Use helper functions from the plugin API:
 - Predicates: `isNULL`, `isNA`, `isNALogical`, `isNAInteger`,
   `isNADouble`, `isNACharacter`
 - Utilities: `naType`, `isMissing`, `coalesce`, `coalesceNULL`,
-  `coalesceNA`, `assertNotMissing`, `renderValue`
+  `coalesceNA`, `assertNotMissing`, `renderValue`, `asLocalDate`,
+  `asInstantUtc`, `asZonedDateTime`, `asDurationSeconds`
 
 Helper cheat sheet:
 
-| Helper                       | Purpose                            | Example                                  |
-|------------------------------|------------------------------------|------------------------------------------|
-| `isNULL(x)`                  | Test R `NULL`                      | `isNULL(row.value)`                      |
-| `isNA(x)`                    | Test any typed `NA` marker         | `isNA(row.value)`                        |
-| `isNADouble(x)`              | Test `NA_real_` specifically       | `isNADouble(row.score)`                  |
-| `isMissing(x)`               | Test `NULL` or typed `NA`          | `isMissing(row.value)`                   |
-| `naType(x)`                  | Get typed NA kind or `null`        | `naType(row.value) == 'integer'`         |
-| `coalesce(x, y)`             | Fallback for `NULL` and typed `NA` | `coalesce(row.x, 0)`                     |
-| `coalesceNULL(x, y)`         | Fallback only for `NULL`           | `coalesceNULL(row.x, 0)`                 |
-| `coalesceNA(x, y)`           | Fallback only for typed `NA`       | `coalesceNA(row.x, 0)`                   |
-| `assertNotMissing(x, label)` | Throw on missing values            | `assertNotMissing(row.sample, 'sample')` |
-| `renderValue(x)`             | Stable display form for logs       | `renderValue(row.score)`                 |
+| Helper                       | Purpose                                         | Example                                  |
+|------------------------------|-------------------------------------------------|------------------------------------------|
+| `isNULL(x)`                  | Test R `NULL`                                   | `isNULL(row.value)`                      |
+| `isNA(x)`                    | Test any typed `NA` marker                      | `isNA(row.value)`                        |
+| `isNADouble(x)`              | Test `NA_real_` specifically                    | `isNADouble(row.score)`                  |
+| `isMissing(x)`               | Test `NULL` or typed `NA`                       | `isMissing(row.value)`                   |
+| `naType(x)`                  | Get typed NA kind or `null`                     | `naType(row.value) == 'integer'`         |
+| `coalesce(x, y)`             | Fallback for `NULL` and typed `NA`              | `coalesce(row.x, 0)`                     |
+| `coalesceNULL(x, y)`         | Fallback only for `NULL`                        | `coalesceNULL(row.x, 0)`                 |
+| `coalesceNA(x, y)`           | Fallback only for typed `NA`                    | `coalesceNA(row.x, 0)`                   |
+| `assertNotMissing(x, label)` | Throw on missing values                         | `assertNotMissing(row.sample, 'sample')` |
+| `renderValue(x)`             | Stable display form for logs                    | `renderValue(row.score)`                 |
+| `asLocalDate(x)`             | Parse normalized `Date` string to `LocalDate`   | `asLocalDate(row.date)`                  |
+| `asInstantUtc(x)`            | Parse normalized UTC timestamp to `Instant`     | `asInstantUtc(row.ts)`                   |
+| `asZonedDateTime(x[, zone])` | Convert normalized timestamp to `ZonedDateTime` | `asZonedDateTime(row.ts, 'UTC')`         |
+| `asDurationSeconds(x)`       | Convert numeric seconds to `Duration`           | `asDurationSeconds(row.dt)`              |
 
 ``` nextflow
-include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue } from 'plugin/nf-r-ipc'
+include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -206,7 +233,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057cd03ceb.nf` [gigantic_franklin] DSL2 - revision: 4e431e9b66
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed64bdbb1e.nf` [spontaneous_faggin] DSL2 - revision: 491de034e4
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -214,7 +241,7 @@ workflow {
 ### R class normalization example
 
 ``` nextflow
-include { rFunction } from 'plugin/nf-r-ipc'
+include { rFunction; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
   def out = rFunction([
@@ -224,24 +251,36 @@ workflow {
       emit_types <- function() {
         list(
           fac = factor('A'),
+          ord = ordered('high', levels = c('low', 'medium', 'high')),
           date = as.Date('2024-01-02'),
-          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC')
+          ts = as.POSIXct('2024-01-02 03:04:05', tz='UTC'),
+          dt = as.difftime(125, units='secs'),
+          deep = list(level1 = list(level2 = list(ts = as.POSIXct('2024-01-03 04:05:06', tz='UTC'))))
         )
       }
   ''')
 
   assert out.decoded_data.fac == 'A'
+  assert out.decoded_data.ord == 'high'
   assert out.decoded_data.date == '2024-01-02'
   assert out.decoded_data.ts.contains('UTC')
+  assert ((Number)out.decoded_data.dt).doubleValue() == 125d
+
+  assert asLocalDate(out.decoded_data.date).toString() == '2024-01-02'
+  assert asInstantUtc(out.decoded_data.ts).toString().startsWith('2024-01-02T03:04:05Z')
+  assert asZonedDateTime(out.decoded_data.ts, 'Europe/Paris').zone.id == 'Europe/Paris'
+  assert asDurationSeconds(out.decoded_data.dt).seconds == 125L
+
+  assert out.decoded_data.deep.level1.level2.ts.contains('UTC')
   println "types=${out.decoded_data}"
 }
 #> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370571f3192bf.nf` [gigantic_babbage] DSL2 - revision: d27ecdb908
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed6adb8c59.nf` [awesome_liskov] DSL2 - revision: ba0b4c330d
 #> 
-#> types=[fac:A, date:2024-01-02, ts:2024-01-02 03:04:05 UTC]
+#> types=[fac:A, ord:high, date:2024-01-02, ts:2024-01-02 03:04:05 UTC, dt:125.0, deep:[level1:[level2:[ts:2024-01-03 04:05:06 UTC]]]]
 ```
 
 ### Current limitations
@@ -250,10 +289,12 @@ Current normalization intentionally keeps the contract narrow:
 
 - `factor` values are returned as strings (levels), not factor objects.
 - `Date`/`POSIX*` are returned as strings, not Java date-time objects.
+- Use `asLocalDate/asInstantUtc/asZonedDateTime` helpers for opt-in Java
+  time conversion.
 - Deep list-columns and arbitrary R object graphs are not a supported
   wire shape.
-- No object identity/class round-trip guarantees beyond documented
-  normalized forms.
+- Deep nested list/map values are supported; arbitrary R object
+  identity/class round-trip is not guaranteed.
 
 If you need richer semantics, convert explicitly in R before returning.
 
@@ -284,7 +325,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057349987e3.nf` [modest_jepsen] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed54748f39.nf` [sad_pauling] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -314,7 +355,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370576ed5d056.nf` [modest_jones] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed58a583e.nf` [pedantic_boltzmann] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -341,7 +382,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-13705719700f1a.nf` [trusting_visvesvaraya] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed2fc920ab.nf` [nauseous_bassi] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -408,7 +449,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [special_wegener] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [extravagant_hirsch] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -458,7 +499,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-137057775b21c0.nf` [thirsty_babbage] DSL2 - revision: 1b43bf73be
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed25a67c4a.nf` [backstabbing_bassi] DSL2 - revision: 1b43bf73be
 #> 
 #> rows=32
 #> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
@@ -521,10 +562,10 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp5sPkpU/readme-nextflow-1370571866be84.nf` [lonely_albattani] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/Rtmp0kj3vP/readme-nextflow-13a9ed3817b191.nf` [lethal_hawking] DSL2 - revision: 2e081cf29f
 #> 
-#> CHAN A v3=9.0
 #> TABLE S1 x2=2.0
+#> CHAN A v3=9.0
 #> TABLE S2 x2=0
 #> CHAN B v3=12.0
 ```

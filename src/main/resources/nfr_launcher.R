@@ -197,6 +197,7 @@ is_data_frame_shape <- function(x) {
   if (!is.list(x) || is.null(names(x)) || length(x) == 0L) return(FALSE)
   scalar_col <- function(col) {
     if (!is.list(col)) return(FALSE)
+    if (!is.null(names(col))) return(FALSE)
     for (i in seq_along(col)) {
       item <- col[[i]]
       if (is.null(item) || (length(item) == 1L && is.atomic(item))) {
@@ -234,6 +235,12 @@ normalize_arg_for_r <- function(x) {
 }
 
 normalize_result_for_wire <- function(x) {
+  if (inherits(x, "difftime")) {
+    return(as.numeric(x, units = "secs"))
+  }
+  if (inherits(x, "ordered")) {
+    return(as.character(x))
+  }
   if (inherits(x, "factor")) {
     return(as.character(x))
   }

@@ -29,8 +29,11 @@ class RTypeCoverageIntegrationTest extends Specification {
 emit_types <- function() {
   list(
     fac = factor('A'),
+    ordered_fac = ordered('hi', levels = c('lo','hi')),
     date = as.Date('2024-01-02'),
     ts = as.POSIXct('2024-01-02 03:04:05', tz = 'UTC'),
+    dt = as.difftime(90, units = 'secs'),
+    deep = list(level1 = list(level2 = list(level3 = list(flag = TRUE, when = as.POSIXct('2024-01-05 06:07:08', tz = 'UTC'))))),
     frame = data.frame(
       grp = factor(c('x', 'y')),
       d = as.Date(c('2024-01-02', '2024-01-03')),
@@ -59,9 +62,15 @@ emit_types <- function() {
         IntegrationAssertions.assertOkEnvelope(decoded.control, 'r-typecov-1', 'value_graph')
 
         out.fac == 'A'
+        out.ordered_fac == 'hi'
         out.date == '2024-01-02'
         out.ts.toString().contains('2024-01-02')
         out.ts.toString().contains('UTC')
+        ((Number)out.dt).doubleValue() == 90d
+
+        Map deep = (Map)out.deep
+        ((Map)((Map)((Map)deep.level1).level2).level3).flag == true
+        ((Map)((Map)((Map)deep.level1).level2).level3).when.toString().contains('UTC')
 
         frame.size() == 2
         frame[0].grp == 'x'

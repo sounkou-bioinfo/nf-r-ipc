@@ -99,8 +99,10 @@ Supported tags:
 To keep the wire contract narrow and predictable, the launcher normalizes selected R classes before encoding:
 
 - `factor` -> `string` values (level labels)
+- `ordered` factor -> `string` values (ordered labels)
 - `Date` -> ISO date `string` (`YYYY-MM-DD`)
 - `POSIXct`/`POSIXlt`/`POSIXt` -> UTC timestamp `string`
+- `difftime` -> `float64` seconds
 
 This normalization is applied recursively, including values inside returned data-frame rows.
 
@@ -123,3 +125,7 @@ The plugin exposes helpers for explicit missing-value handling in workflow code:
   - `coalesceNA(x, fallback)`
   - `assertNotMissing(x[, label])`
   - `renderValue(x)` -> stable string form (`NULL`, `NA<double>`, etc.)
+  - `asLocalDate(x)`
+  - `asInstantUtc(x)`
+  - `asZonedDateTime(x[, zoneId])`
+  - `asDurationSeconds(x)`
