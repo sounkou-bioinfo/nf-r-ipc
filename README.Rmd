@@ -337,6 +337,42 @@ else
 fi
 ```
 
+## Real dataset example (`mtcars`)
+
+This example returns the built-in R `mtcars` dataset, then does downstream processing in Groovy.
+
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+include { rTable } from 'plugin/nf-r-ipc'
+
+workflow {
+  def rows = rTable([
+      function: 'emit_mtcars',
+      _executable: 'Rscript'
+  ], '''
+      emit_mtcars <- function() {
+        out <- mtcars
+        out$car <- rownames(mtcars)
+        rownames(out) <- NULL
+        out
+      }
+  ''')
+
+  assert rows.size() == 32
+
+  def top = rows
+    .collect { r ->
+      def hp = ((Number)r.hp).doubleValue()
+      def wt = ((Number)r.wt).doubleValue()
+      r + [hp_per_wt: hp / wt]
+    }
+    .sort { a, b -> ((Number)b.hp_per_wt).doubleValue() <=> ((Number)a.hp_per_wt).doubleValue() }
+    .take(5)
+
+  println "rows=${rows.size()}"
+  println "top5_hp_per_wt=${top.collect { [car: it.car, hp_per_wt: String.format('%.2f', ((Number)it.hp_per_wt).doubleValue())] }}"
+}
+```
+
 ## End-to-end example
 
 This one captures nested structures, typed missing values, table output, and channel transformation.

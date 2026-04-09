@@ -17,7 +17,6 @@ side).
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
-#> Starting a Gradle Daemon, 1 busy and 2 stopped Daemons could not be reused, use --status for details
 #> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
@@ -30,18 +29,10 @@ side).
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test
+#> > Task :test UP-TO-DATE
 #> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 5s
-#> 8 actionable tasks: 1 executed, 7 up-to-date
+#> BUILD SUCCESSFUL in 450ms
+#> 8 actionable tasks: 8 up-to-date
 ```
 
 ``` bash
@@ -57,7 +48,7 @@ make install
 #> > Task :assemble UP-TO-DATE
 #> > Task :installPlugin UP-TO-DATE
 #> 
-#> BUILD SUCCESSFUL in 394ms
+#> BUILD SUCCESSFUL in 385ms
 #> 6 actionable tasks: 6 up-to-date
 ```
 
@@ -103,7 +94,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec7d85d46e.nf` [agitated_mccarthy] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7229fc84c.nf` [serene_easley] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -200,7 +191,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec271070f.nf` [pensive_solvay] DSL2 - revision: 4e431e9b66
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe710ddeeb5.nf` [romantic_jones] DSL2 - revision: 4e431e9b66
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -233,7 +224,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec3d04ae70.nf` [pedantic_raman] DSL2 - revision: d27ecdb908
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe77961d7ea.nf` [serene_becquerel] DSL2 - revision: d27ecdb908
 #> 
 #> types=[fac:A, date:2024-01-02, ts:2024-01-02 03:04:05 UTC]
 ```
@@ -265,7 +256,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec11d6e473.nf` [distraught_turing] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7168764a7.nf` [insane_ride] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -295,7 +286,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec6ccd0536.nf` [happy_brown] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe74c5bdd24.nf` [elegant_austin] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -322,7 +313,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec6c08a938.nf` [amazing_moriondo] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe7ce232eb.nf` [sleepy_cajal] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -389,12 +380,57 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [golden_yonath] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [stoic_golick] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
 #> OK decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
 #> ERR status=error
+```
+
+## Real dataset example (`mtcars`)
+
+This example returns the built-in R `mtcars` dataset, then does
+downstream processing in Groovy.
+
+``` nextflow
+include { rTable } from 'plugin/nf-r-ipc'
+
+workflow {
+  def rows = rTable([
+      function: 'emit_mtcars',
+      _executable: 'Rscript'
+  ], '''
+      emit_mtcars <- function() {
+        out <- mtcars
+        out$car <- rownames(mtcars)
+        rownames(out) <- NULL
+        out
+      }
+  ''')
+
+  assert rows.size() == 32
+
+  def top = rows
+    .collect { r ->
+      def hp = ((Number)r.hp).doubleValue()
+      def wt = ((Number)r.wt).doubleValue()
+      r + [hp_per_wt: hp / wt]
+    }
+    .sort { a, b -> ((Number)b.hp_per_wt).doubleValue() <=> ((Number)a.hp_per_wt).doubleValue() }
+    .take(5)
+
+  println "rows=${rows.size()}"
+  println "top5_hp_per_wt=${top.collect { [car: it.car, hp_per_wt: String.format('%.2f', ((Number)it.hp_per_wt).doubleValue())] }}"
+}
+#> [33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+#> 
+#>  N E X T F L O W   ~  version 25.10.2
+#> 
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe757fa849a.nf` [agitated_faraday] DSL2 - revision: eafab5b785
+#> 
+#> rows=32
+#> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
 ```
 
 ## End-to-end example
@@ -454,10 +490,10 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpNqZyKo/readme-nextflow-1314ec42b3b996.nf` [pensive_jennings] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/RtmpYJgbeF/readme-nextflow-131fe77d7119fe.nf` [hopeful_heyrovsky] DSL2 - revision: 2e081cf29f
 #> 
 #> CHAN A v3=9.0
 #> TABLE S1 x2=2.0
-#> CHAN B v3=12.0
 #> TABLE S2 x2=0
+#> CHAN B v3=12.0
 ```
