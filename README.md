@@ -17,7 +17,6 @@ side).
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
-#> Starting a Gradle Daemon, 1 busy and 1 stopped Daemons could not be reused, use --status for details
 #> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
@@ -30,18 +29,10 @@ side).
 #> > Task :compileTestGroovy UP-TO-DATE
 #> > Task :processTestResources UP-TO-DATE
 #> > Task :testClasses UP-TO-DATE
-#> > Task :test
+#> > Task :test UP-TO-DATE
 #> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 5s
-#> 8 actionable tasks: 1 executed, 7 up-to-date
+#> BUILD SUCCESSFUL in 472ms
+#> 8 actionable tasks: 8 up-to-date
 ```
 
 ``` bash
@@ -55,22 +46,10 @@ make install
 #> > Task :jar UP-TO-DATE
 #> > Task :packagePlugin UP-TO-DATE
 #> > Task :assemble UP-TO-DATE
+#> > Task :installPlugin UP-TO-DATE
 #> 
-#> > Task :installPlugin
-#> Plugin nf-r-ipc installed successfully!
-#> Installation location: /root/.nextflow/plugins
-#> Installation location determined by - Default location (~/.nextflow/plugins)
-#> 
-#> [Incubating] Problems report is available at: file:///root/nf-r-ipc/build/reports/problems/problems-report.html
-#> 
-#> Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-#> 
-#> You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-#> 
-#> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-#> 
-#> BUILD SUCCESSFUL in 620ms
-#> 6 actionable tasks: 1 executed, 5 up-to-date
+#> BUILD SUCCESSFUL in 426ms
+#> 6 actionable tasks: 6 up-to-date
 ```
 
 ## Mental model
@@ -115,7 +94,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def6dc0345f.nf` [lonely_kimura] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba11171093c9.nf` [mad_allen] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -241,7 +220,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def2ebfe960.nf` [kickass_moriondo] DSL2 - revision: 491de034e4
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba115b783ab1.nf` [fabulous_pesquet] DSL2 - revision: 491de034e4
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -286,7 +265,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def45312866.nf` [cranky_wiles] DSL2 - revision: ba0b4c330d
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba1184aaade.nf` [irreverent_curry] DSL2 - revision: ba0b4c330d
 #> 
 #> types=[fac:A, ord:high, date:2024-01-02, ts:2024-01-02 03:04:05 UTC, dt:125.0, deep:[level1:[level2:[ts:2024-01-03 04:05:06 UTC]]]]
 ```
@@ -333,7 +312,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def67f9e7a.nf` [infallible_hamilton] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba1115c30a12.nf` [high_easley] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -363,7 +342,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def34dde95d.nf` [scruffy_pare] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba1128a1d44.nf` [angry_hamilton] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -390,7 +369,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def29d57ae8.nf` [jovial_wiles] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba11f75c1d6.nf` [nauseous_darwin] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -429,7 +408,7 @@ workflow {
 NF
 
 set +e
-nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.2.0 >/tmp/nfr_runtime_guard_example.log 2>&1
+nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.2.1 >/tmp/nfr_runtime_guard_example.log 2>&1
 status=$?
 set -e
 echo "exit=$status"
@@ -449,7 +428,7 @@ Conda executable resolution order:
 ``` bash
 if [ -x /root/miniconda3/bin/conda ]; then
   export NFR_CONDA_EXE=/root/miniconda3/bin/conda
-  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.2.0 -c validation/nextflow.config
+  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.2.1 -c validation/nextflow.config
 else
   echo "Conda binary not found at /root/miniconda3/bin/conda; skipping override demo"
 fi
@@ -457,7 +436,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [evil_stonebraker] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [voluminous_brown] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -507,7 +486,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def36809908.nf` [goofy_ritchie] DSL2 - revision: 1b43bf73be
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba113a5f08a7.nf` [magical_wozniak] DSL2 - revision: 1b43bf73be
 #> 
 #> rows=32
 #> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
@@ -570,7 +549,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def278767dc.nf` [loquacious_curran] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/RtmppDJbe5/readme-nextflow-18ba1148a652b.nf` [stoic_miescher] DSL2 - revision: 2e081cf29f
 #> 
 #> TABLE S1 x2=2.0
 #> CHAN A v3=9.0

@@ -4,6 +4,8 @@ All notable changes to `nf-r-ipc` are documented in this file.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-04-10
+
 ### Added
 - Typed error classes for clearer failure modes:
   - `NfrRuntimeException` (launcher/runtime failures)

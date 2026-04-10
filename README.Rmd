@@ -78,7 +78,7 @@ Core entry points:
 
 ## First working call
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -155,7 +155,7 @@ Typed error classes exposed by the plugin:
 - `NfrResponseException` for structured R error envelopes (`status=error`)
 - `NfrParseException` for helper conversion parse failures
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -216,7 +216,7 @@ workflow {
 
 ### R class normalization example
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rFunction; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -269,7 +269,7 @@ If you need richer semantics, convert explicitly in R before returning.
 - Default: throw on `status=error`
 - `_on_error: 'return'`: return envelope with `control.status='error'`
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rFunction } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -293,7 +293,7 @@ workflow {
 
 Use `rTable(...)` when you want records directly:
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rTable } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -313,7 +313,7 @@ workflow {
 
 Use `channelFromR(...)` when you want channel-first style:
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { channelFromR; coalesce } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -364,7 +364,7 @@ workflow {
 NF
 
 set +e
-nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.2.0 >/tmp/nfr_runtime_guard_example.log 2>&1
+nextflow run /tmp/nfr_runtime_guard_example.nf -plugins nf-r-ipc@0.2.1 >/tmp/nfr_runtime_guard_example.log 2>&1
 status=$?
 set -e
 echo "exit=$status"
@@ -382,7 +382,7 @@ Conda executable resolution order:
 ```{bash eval=TRUE}
 if [ -x /root/miniconda3/bin/conda ]; then
   export NFR_CONDA_EXE=/root/miniconda3/bin/conda
-  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.2.0 -c validation/nextflow.config
+  nextflow run validation/conda_main.nf -plugins nf-r-ipc@0.2.1 -c validation/nextflow.config
 else
   echo "Conda binary not found at /root/miniconda3/bin/conda; skipping override demo"
 fi
@@ -392,7 +392,7 @@ fi
 
 This example returns the built-in R `mtcars` dataset, then does downstream processing in Groovy.
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rTable } from 'plugin/nf-r-ipc'
 
 workflow {
@@ -431,7 +431,7 @@ workflow {
 
 This one captures nested structures, typed missing values, table output, and channel transformation.
 
-```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
+```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.1'}
 include { rFunction; rTable; channelFromR; isMissing; isNADouble; coalesce } from 'plugin/nf-r-ipc'
 
 workflow {

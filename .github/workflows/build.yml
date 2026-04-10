@@ -62,12 +62,12 @@ jobs:
 
       - name: Test
         run: |
-          nextflow run validation/ -plugins nf-r-ipc@0.2.0
-          nextflow run validation/channels_main.nf -plugins nf-r-ipc@0.2.0
-          nextflow run validation/channels_from_main.nf -plugins nf-r-ipc@0.2.0
+          nextflow run validation/ -plugins nf-r-ipc@0.2.1
+          nextflow run validation/channels_main.nf -plugins nf-r-ipc@0.2.1
+          nextflow run validation/channels_from_main.nf -plugins nf-r-ipc@0.2.1
 
       - name: Test channel error flow
-        run: nextflow run validation/channels_error_main.nf -plugins nf-r-ipc@0.2.0
+        run: nextflow run validation/channels_error_main.nf -plugins nf-r-ipc@0.2.1
 
       - name: Check README sync
         run: ./bin/check-readme-sync.sh
