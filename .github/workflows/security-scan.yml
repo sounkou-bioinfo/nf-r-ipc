@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew --no-daemon dependencies --configuration runtimeClasspath
 
       - name: Run Trivy filesystem scan (dependencies)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: fs
           scan-ref: .
