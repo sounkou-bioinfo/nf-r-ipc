@@ -17,7 +17,7 @@ side).
 
 ``` bash
 ./gradlew test --tests nextflow.nfr.integration.ArrowRoundtripIntegrationTest
-#> Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+#> Starting a Gradle Daemon, 1 busy and 1 stopped Daemons could not be reused, use --status for details
 #> > Task :compileJava NO-SOURCE
 #> > Task :compileGroovy UP-TO-DATE
 #> > Task :processResources UP-TO-DATE
@@ -40,7 +40,7 @@ side).
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 4s
+#> BUILD SUCCESSFUL in 5s
 #> 8 actionable tasks: 1 executed, 7 up-to-date
 ```
 
@@ -69,7 +69,7 @@ make install
 #> 
 #> For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 #> 
-#> BUILD SUCCESSFUL in 597ms
+#> BUILD SUCCESSFUL in 620ms
 #> 6 actionable tasks: 1 executed, 5 up-to-date
 ```
 
@@ -115,7 +115,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c66a8379cf.nf` [curious_lorenz] DSL2 - revision: 02574ee18f
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def6dc0345f.nf` [lonely_kimura] DSL2 - revision: 02574ee18f
 #> 
 #> runtime=[Rscript]
 #> decoded=[sample:S1, values:[1.0, 2.0, 3.0], meta:[batch:B1, flags:[true, false, null]]]
@@ -241,7 +241,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c66268b0301.nf` [soggy_kalam] DSL2 - revision: 491de034e4
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def2ebfe960.nf` [kickass_moriondo] DSL2 - revision: 491de034e4
 #> 
 #> decoded=[null_value:null, na_logical:LOGICAL, na_integer:INTEGER, na_double:DOUBLE, na_character:CHARACTER, nested:[DOUBLE, null, CHARACTER]]
 ```
@@ -286,7 +286,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c6654ef0983.nf` [spontaneous_mestorf] DSL2 - revision: ba0b4c330d
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def45312866.nf` [cranky_wiles] DSL2 - revision: ba0b4c330d
 #> 
 #> types=[fac:A, ord:high, date:2024-01-02, ts:2024-01-02 03:04:05 UTC, dt:125.0, deep:[level1:[level2:[ts:2024-01-03 04:05:06 UTC]]]]
 ```
@@ -333,7 +333,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c666d4efcb1.nf` [gloomy_poincare] DSL2 - revision: e4d574c15c
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def67f9e7a.nf` [infallible_hamilton] DSL2 - revision: e4d574c15c
 #> 
 #> error_class=RRuntimeError
 #> error_message=boom for diagnostics
@@ -363,7 +363,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c6632b4b421.nf` [serene_wozniak] DSL2 - revision: ca11b15d66
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def34dde95d.nf` [scruffy_pare] DSL2 - revision: ca11b15d66
 #> 
 #> rows=[[sample:S1, x:1.0], [sample:S2, x:2.0]]
 ```
@@ -390,7 +390,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c66903a162.nf` [festering_shockley] DSL2 - revision: c2d18268f6
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def29d57ae8.nf` [jovial_wiles] DSL2 - revision: c2d18268f6
 #> 
 #> ROW S1 x2=2.0
 #> ROW S2 x2=0
@@ -457,7 +457,7 @@ fi
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `validation/conda_main.nf` [serene_ardinghelli] DSL2 - revision: fbd21a0aa8
+#> Launching `validation/conda_main.nf` [evil_stonebraker] DSL2 - revision: fbd21a0aa8
 #> 
 #> OK status=ok codec=arrow-java
 #> OK runtime=[/usr/bin/Rscript]
@@ -507,7 +507,7 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c667315d99.nf` [ecstatic_swanson] DSL2 - revision: 1b43bf73be
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def36809908.nf` [goofy_ritchie] DSL2 - revision: 1b43bf73be
 #> 
 #> rows=32
 #> top5_hp_per_wt=[[car:Maserati Bora, hp_per_wt:93.84], [car:Ford Pantera L, hp_per_wt:83.28], [car:Lotus Europa, hp_per_wt:74.69], [car:Duster 360, hp_per_wt:68.63], [car:Camaro Z28, hp_per_wt:63.80]]
@@ -570,10 +570,10 @@ workflow {
 #> 
 #>  N E X T F L O W   ~  version 25.10.2
 #> 
-#> Launching `/tmp/Rtmp8qcMYb/readme-nextflow-188c6641fa5d05.nf` [focused_wozniak] DSL2 - revision: 2e081cf29f
+#> Launching `/tmp/RtmpwVIE9C/readme-nextflow-189def278767dc.nf` [loquacious_curran] DSL2 - revision: 2e081cf29f
 #> 
-#> CHAN A v3=9.0
 #> TABLE S1 x2=2.0
-#> CHAN B v3=12.0
+#> CHAN A v3=9.0
 #> TABLE S2 x2=0
+#> CHAN B v3=12.0
 ```

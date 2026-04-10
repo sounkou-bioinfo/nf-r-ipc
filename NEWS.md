@@ -4,6 +4,20 @@ All notable changes to `nf-r-ipc` are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Typed error classes for clearer failure modes:
+  - `NfrRuntimeException` (launcher/runtime failures)
+  - `NfrResponseException` (structured response errors)
+  - `NfrParseException` (helper conversion parsing failures)
+- New integration coverage:
+  - `LargeVectorIntegrationTest` for large random vector handling
+
+### Changed
+- Helper conversion functions now raise typed parse exceptions on malformed input.
+
+### Fixed
+- Security hardening: pinned Jackson BOM to `2.21.1` to pull patched `jackson-core` and related modules for GHSA-72hv-8253-57qq.
+
 ## [0.2.0] - 2026-04-09
 
 ### Added
