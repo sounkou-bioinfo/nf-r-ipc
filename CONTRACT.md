@@ -129,3 +129,11 @@ The plugin exposes helpers for explicit missing-value handling in workflow code:
   - `asInstantUtc(x)`
   - `asZonedDateTime(x[, zoneId])`
   - `asDurationSeconds(x)`
+
+## Error Classes (Nextflow side)
+
+`rFunction` and helper conversions raise typed exceptions to make failure modes explicit:
+
+- `NfrRuntimeException`: launcher/runtime failures (e.g. non-zero R process exit with no response IPC)
+- `NfrResponseException`: structured error responses from R (`status=error`) or invalid response status values
+- `NfrParseException`: helper conversion parse failures (date/time/duration conversion helpers)

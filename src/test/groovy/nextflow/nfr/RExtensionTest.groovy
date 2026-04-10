@@ -6,6 +6,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import spock.lang.Specification
 import nextflow.nfr.codec.CodecException
+import nextflow.nfr.codec.NfrParseException
+import nextflow.nfr.codec.NfrRuntimeException
 import nextflow.nfr.value.NAValue
 
 class RExtensionTest extends Specification {
@@ -230,5 +232,57 @@ class RExtensionTest extends Specification {
         then:
         def e2 = thrown(IllegalArgumentException)
         e2.message == 'Missing value for score: NA<double>'
+    }
+
+    def 'should raise parse exceptions for invalid temporal values'() {
+        given:
+        def ext = new TestRExtension()
+
+        when:
+        ext.asLocalDate('not-a-date')
+
+        then:
+        def e1 = thrown(NfrParseException)
+        e1.message.contains('Failed to parse LocalDate')
+
+        when:
+        ext.asInstantUtc('not-a-ts')
+
+        then:
+        def e2 = thrown(NfrParseException)
+        e2.message.contains('Failed to parse UTC timestamp')
+
+        when:
+        ext.asZonedDateTime('2024-01-02 03:04:05 UTC', 'Invalid/Zone')
+
+        then:
+        def e3 = thrown(NfrParseException)
+        e3.message.contains('Invalid timezone id')
+
+        when:
+        ext.asDurationSeconds('not-a-number')
+
+        then:
+        def e4 = thrown(NfrParseException)
+        e4.message.contains('Failed to parse duration seconds')
+    }
+
+    def 'should raise runtime exception when launcher exits without response'() {
+        given:
+        def ext = new TestRuntimeFailureRExtension()
+
+        when:
+        ext.rFunction([function: 'f'], 'f <- function() 1')
+
+        then:
+        def e = thrown(NfrRuntimeException)
+        e.message.contains('R launcher failed')
+    }
+
+    static class TestRuntimeFailureRExtension extends RExtension {
+        @Override
+        protected LaunchResult runRscript(Map<String, Object> launch, java.nio.file.Path scratch, java.nio.file.Path requestIpc, java.nio.file.Path responseIpc, String code) {
+            throw new NfrRuntimeException('R launcher failed (exit=1)\nmock output')
+        }
     }
 }

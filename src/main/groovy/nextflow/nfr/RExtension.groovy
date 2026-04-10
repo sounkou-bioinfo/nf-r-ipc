@@ -18,6 +18,9 @@ import nextflow.nfr.codec.CodecFactory
 import nextflow.nfr.codec.CodecException
 import nextflow.nfr.codec.DecodedResponse
 import nextflow.nfr.codec.IpcCodec
+import nextflow.nfr.codec.NfrParseException
+import nextflow.nfr.codec.NfrResponseException
+import nextflow.nfr.codec.NfrRuntimeException
 import nextflow.nfr.value.NAValue
 import nextflow.plugin.extension.Function
 import nextflow.plugin.extension.PluginExtensionPoint
@@ -143,7 +146,12 @@ class RExtension extends PluginExtensionPoint {
     LocalDate asLocalDate(Object value) {
         if (value == null) return null
         if (value instanceof LocalDate) return (LocalDate)value
-        return LocalDate.parse(String.valueOf(value).trim())
+        try {
+            return LocalDate.parse(String.valueOf(value).trim())
+        }
+        catch(Exception e) {
+            throw new NfrParseException("Failed to parse LocalDate from value: ${value}", e)
+        }
     }
 
     @Function
@@ -155,7 +163,12 @@ class RExtension extends PluginExtensionPoint {
             return Instant.parse(s)
         }
         catch(Exception ignored) {
-            return ZonedDateTime.parse(s, R_UTC_TIMESTAMP).toInstant()
+            try {
+                return ZonedDateTime.parse(s, R_UTC_TIMESTAMP).toInstant()
+            }
+            catch(Exception e) {
+                throw new NfrParseException("Failed to parse UTC timestamp from value: ${value}", e)
+            }
         }
     }
 
@@ -168,7 +181,13 @@ class RExtension extends PluginExtensionPoint {
     ZonedDateTime asZonedDateTime(Object value, String zoneId) {
         if (value == null) return null
         if (value instanceof ZonedDateTime) return (ZonedDateTime)value
-        ZoneId zone = ZoneId.of((zoneId == null || zoneId.trim().isEmpty()) ? 'UTC' : zoneId)
+        ZoneId zone
+        try {
+            zone = ZoneId.of((zoneId == null || zoneId.trim().isEmpty()) ? 'UTC' : zoneId)
+        }
+        catch(Exception e) {
+            throw new NfrParseException("Invalid timezone id: ${zoneId}", e)
+        }
         return asInstantUtc(value).atZone(zone)
     }
 
@@ -180,9 +199,14 @@ class RExtension extends PluginExtensionPoint {
             long millis = Math.round(((Number)value).doubleValue() * 1000d)
             return Duration.ofMillis(millis)
         }
-        double seconds = Double.parseDouble(String.valueOf(value).trim())
-        long millis = Math.round(seconds * 1000d)
-        return Duration.ofMillis(millis)
+        try {
+            double seconds = Double.parseDouble(String.valueOf(value).trim())
+            long millis = Math.round(seconds * 1000d)
+            return Duration.ofMillis(millis)
+        }
+        catch(Exception e) {
+            throw new NfrParseException("Failed to parse duration seconds from value: ${value}", e)
+        }
     }
 
     @Function
@@ -429,7 +453,7 @@ class RExtension extends PluginExtensionPoint {
         String output = new String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8)
 
         if (exit != 0 && !Files.exists(responseIpc)) {
-            throw new CodecException("R launcher failed (exit=${exit})\n${output}")
+            throw new NfrRuntimeException("R launcher failed (exit=${exit})\n${output}")
         }
         return new LaunchResult(exit, output)
     }
@@ -453,12 +477,12 @@ class RExtension extends PluginExtensionPoint {
             return
         }
         if (status != 'error') {
-            throw new CodecException("Invalid response status for call_id=${callId}: ${status}")
+            throw new NfrResponseException("Invalid response status for call_id=${callId}: ${status}")
         }
 
         String errorClass = control.get('error_class') == null ? 'RError' : String.valueOf(control.get('error_class'))
         String errorMessage = control.get('error_message') == null ? 'unknown error' : String.valueOf(control.get('error_message'))
-        throw new CodecException("rFunction failed [call_id=${callId}] ${errorClass}: ${errorMessage}\nLauncher output (tail): ${tail(launcherOutput)}")
+        throw new NfrResponseException("rFunction failed [call_id=${callId}] ${errorClass}: ${errorMessage}\nLauncher output (tail): ${tail(launcherOutput)}")
     }
 
     private static String tail(String text) {

@@ -4,6 +4,7 @@ import java.nio.file.Files
 import nextflow.nfr.codec.ArrowJavaCodec
 import nextflow.nfr.codec.DecodedResponse
 import nextflow.nfr.codec.CodecException
+import nextflow.nfr.codec.NfrResponseException
 import nextflow.nfr.RExtension
 import nextflow.nfr.codec.IpcCodec
 import java.nio.file.Path
@@ -51,7 +52,7 @@ class RLevelErrorEnvelopeIntegrationTest extends Specification {
         ext.rFunction([function: 'brokenFn', x: 1], 'brokenFn <- function(x) x')
 
         then:
-        def e = thrown(CodecException)
+        def e = thrown(NfrResponseException)
         e.message.contains('rFunction failed')
         e.message.contains('RRuntimeError')
         e.message.contains('object x not found')

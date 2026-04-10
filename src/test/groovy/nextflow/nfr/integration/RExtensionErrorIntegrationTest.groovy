@@ -6,6 +6,7 @@ import nextflow.nfr.RExtension
 import nextflow.nfr.codec.CodecException
 import nextflow.nfr.codec.DecodedResponse
 import nextflow.nfr.codec.IpcCodec
+import nextflow.nfr.codec.NfrResponseException
 import spock.lang.Specification
 
 class RExtensionErrorIntegrationTest extends Specification {
@@ -28,7 +29,7 @@ class RExtensionErrorIntegrationTest extends Specification {
         ext.rFunction([function: 'boom', x: 1L], 'boom <- function(x) x')
 
         then:
-        def e = thrown(CodecException)
+        def e = thrown(NfrResponseException)
         e.message.contains('rFunction failed')
         e.message.contains('RRuntimeError')
         e.message.contains('simulated failure')

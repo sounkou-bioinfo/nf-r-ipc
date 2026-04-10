@@ -149,6 +149,12 @@ Helper cheat sheet:
 | `asZonedDateTime(x[, zone])` | Convert normalized timestamp to `ZonedDateTime` | `asZonedDateTime(row.ts, 'UTC')` |
 | `asDurationSeconds(x)` | Convert numeric seconds to `Duration` | `asDurationSeconds(row.dt)` |
 
+Typed error classes exposed by the plugin:
+
+- `NfrRuntimeException` for launcher/runtime failures
+- `NfrResponseException` for structured R error envelopes (`status=error`)
+- `NfrParseException` for helper conversion parse failures
+
 ```{nextflow eval=TRUE, args='-plugins nf-r-ipc@0.2.0'}
 include { rFunction; isNULL; isNA; isNALogical; isNAInteger; isNADouble; isNACharacter; naType; isMissing; coalesce; coalesceNULL; coalesceNA; assertNotMissing; renderValue; asLocalDate; asInstantUtc; asZonedDateTime; asDurationSeconds } from 'plugin/nf-r-ipc'
 
